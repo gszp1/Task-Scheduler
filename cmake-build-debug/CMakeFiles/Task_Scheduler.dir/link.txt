@@ -1,0 +1,1 @@
+/usr/bin/cc -g CMakeFiles/Task_Scheduler.dir/task_scheduler.c.o -o Task_Scheduler 
