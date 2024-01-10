@@ -16,6 +16,7 @@ int main(int argc, char* argv[]) {
         if (server_msg_queue == -1) {
             return -1;
         }
+        mq_close(server_msg_queue);
     } else {
         //server
         while (1) {
