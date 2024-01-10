@@ -2,7 +2,7 @@
 #define TASK_SCHEDULER_TASK_SCHEDULER_H
 
 // Macros //
-#define SERVER_QUEUE_NAME "server_queue"
+#define SERVER_QUEUE_NAME "/server_queue"
 
 #define MAX_MESSAGES 50
 
