@@ -13,7 +13,11 @@ int main(int argc, char* argv[]) {
     if ((server_msg_queue == -1) && (errno == EEXIST)) {
         
     } else {
+        while (1) {
 
+        }
+        mq_close(server_msg_queue);
+        mq_unlink(SERVER_QUEUE_NAME);
     }
     
 }
