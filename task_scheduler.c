@@ -12,7 +12,10 @@ int main(int argc, char* argv[]) {
     //program flow - true -> client | false -> server
     if ((server_msg_queue == -1) && (errno == EEXIST)) {
         //client
-
+        server_msg_queue  = mq_open(SERVER_QUEUE_NAME, O_WRONLY, 0666, &server_msg_queue_attributes);
+        if (server_msg_queue == -1) {
+            return -1;
+        }
     } else {
         //server
         while (1) {
