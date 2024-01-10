@@ -8,10 +8,11 @@ int main(int argc, char* argv[]) {
     server_msg_queue_attributes.mq_msgsize = 100 * sizeof(char); //temporary
 
     //try to create main queue
-    mqd_t server_msg_queue = mq_open(SERVER_QUEUE_NAME, O_CREAT | O_EXCL | O_RDWR, 0666, &server_msg_queue_attributes);
+    mqd_t server_msg_queue = mq_open(SERVER_QUEUE_NAME, O_CREAT | O_EXCL | O_RDONLY, 0666, &server_msg_queue_attributes);
     //program flow - true -> client | false -> server
     if ((server_msg_queue == -1) && (errno == EEXIST)) {
         //client
+
     } else {
         //server
         while (1) {
