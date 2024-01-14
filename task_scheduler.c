@@ -28,7 +28,7 @@ int main(int argc, char* argv[], char* envp[]) {
 
         tasks_list_t* tasks_list;
         if (task_list_init(tasks_list)) {
-            printf("Server failed to start. Terminating execution.");
+            printf("Server failed to start. Terminating execution.\n");
             mq_close(server_msg_queue);
             mq_unlink(SERVER_QUEUE_NAME);
             return 0;
