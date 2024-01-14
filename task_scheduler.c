@@ -7,7 +7,7 @@ int main(int argc, char* argv[], char* envp[]) {
     struct mq_attr server_msg_queue_attributes;
     server_msg_queue_attributes.mq_maxmsg = MAX_MESSAGES;
     server_msg_queue_attributes.mq_flags = 0;
-    server_msg_queue_attributes.mq_msgsize = 256 * sizeof(char); //temporary
+    server_msg_queue_attributes.mq_msgsize = sizeof(transfer_object_t); //temporary
 
     // try to create main queue
     mqd_t server_msg_queue = mq_open(SERVER_QUEUE_NAME, O_CREAT | O_EXCL | O_RDONLY, 0666, &server_msg_queue_attributes);
@@ -21,7 +21,15 @@ int main(int argc, char* argv[], char* envp[]) {
         }
         for (int i = 1; i < argc; ++i) {
             printf("%s\n", argv[i]);
-            printf("%d\n", mq_send(server_msg_queue, argv[i], 256 * sizeof(char), 0));
+            transfer_object_t transfer_object;
+            int counter = 0;
+            while (argv[i][counter] != '\0' && counter < MAX_ARGUMENT_SIZE) {
+                transfer_object.content[counter] = argv[i][counter];
+                ++counter;
+            }
+            transfer_object.content[counter] = '\0';
+            transfer_object.pid = getpid();
+            printf("%d\n", mq_send(server_msg_queue, (char*)(&transfer_object), sizeof(transfer_object_t), 0));
         }
         mq_close(server_msg_queue);
     } else {
@@ -36,9 +44,9 @@ int main(int argc, char* argv[], char* envp[]) {
         }
 
         while (1) {
-            char msg[256];
-            mq_receive(server_msg_queue, msg, 256 * sizeof(char), NULL);
-            printf("%s\n", msg);
+            transfer_object_t transfer_object;
+            mq_receive(server_msg_queue, (char*)(&transfer_object), sizeof(transfer_object_t), NULL);
+            printf("%s\n", transfer_object.content);
         }// temporary, change to proper requests handling later
         tasks_list_destroy(tasks_list);
         mq_close(server_msg_queue);

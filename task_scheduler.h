@@ -4,6 +4,7 @@
 // Macros //
 #define SERVER_QUEUE_NAME "/server_queue"
 #define MAX_MESSAGES 10
+#define MAX_ARGUMENT_SIZE 255
 
 // Includes //
 #include <stdio.h>
@@ -20,7 +21,7 @@
 
 typedef struct {
     pid_t pid;
-    char content[256];
+    char content[MAX_ARGUMENT_SIZE + 1];
 } transfer_object_t;
 
 typedef struct {
