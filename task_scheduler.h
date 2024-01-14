@@ -14,4 +14,11 @@
 #include <fcntl.h>
 #include <sys/stat.h>
 
+// data types  //
+
+typedef struct {
+    void* head;
+    void* tail;
+} tasks_list;
+
 #endif //TASK_SCHEDULER_TASK_SCHEDULER_H
