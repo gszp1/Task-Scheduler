@@ -1,7 +1,6 @@
 #include "task_scheduler.h"
 
 int main(int argc, char* argv[]) {
-    mq_unlink(SERVER_QUEUE_NAME);
     struct mq_attr server_msg_queue_attributes;
     server_msg_queue_attributes.mq_maxmsg = MAX_MESSAGES;
     server_msg_queue_attributes.mq_flags = 0;
@@ -10,7 +9,7 @@ int main(int argc, char* argv[]) {
     //try to create main queue
     mqd_t server_msg_queue = mq_open(SERVER_QUEUE_NAME, O_CREAT | O_EXCL | O_RDONLY, 0666, &server_msg_queue_attributes);
     if ((server_msg_queue == -1) && (errno == EEXIST)) {
-        printf("Running process as client.");
+        printf("Running process as client.\n");
         // temporary reading and printing program arguments.
         server_msg_queue  = mq_open(SERVER_QUEUE_NAME, O_WRONLY, 0666, &server_msg_queue_attributes);
         if (server_msg_queue == -1) {
@@ -22,8 +21,8 @@ int main(int argc, char* argv[]) {
         }
         mq_close(server_msg_queue);
     } else {
-        printf("Running process as server.");
-        while (getchar() != 'q') {
+        printf("Running process as server.\n");
+        while (1) {
             char msg[256];
             mq_receive(server_msg_queue, msg, 256 * sizeof(char), NULL);
             printf("%s\n", msg);

@@ -8,4 +8,4 @@ if [ ! -f "$file_path" ]; then
 fi
 
 # Run the program (assuming it's in the current directory)
-./remover
+./remover "/server_queue"
