@@ -31,8 +31,9 @@ typedef struct {
 } task_list_node_t;
 
 typedef struct {
-    pid_t pid;
     unsigned long id;
+    pid_t pid;
+    timer_t timer;
 } task_t;
 
 // functions declarations //

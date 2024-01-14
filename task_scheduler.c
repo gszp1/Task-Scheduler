@@ -1,5 +1,9 @@
 #include "task_scheduler.h"
 
+// global variables and mutexes //
+
+pthread_mutex_t task_access_mutex = PTHREAD_MUTEX_INITIALIZER;
+
 // main function //
 
 int main(int argc, char* argv[]) {
