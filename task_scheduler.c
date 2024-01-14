@@ -80,3 +80,21 @@ void tasks_list_destroy(tasks_list_t* tasks_list) {
     pthread_mutex_destroy(&(tasks_list->list_access_mutex));
     free(tasks_list);
 }
+
+int queue_send_arguments(int argc, char* argv[], mqd_t message_queue) {
+    transfer_object_t transfer_object;
+    transfer_object.pid = getpid();
+    for (int i = 1; i < argc; ++i) {
+        int counter = 0;
+        while (argv[i][counter] != '\0' && counter < MAX_ARGUMENT_SIZE) {
+            transfer_object.content[counter] = argv[i][counter];
+            ++counter;
+        }
+        transfer_object.content[counter] = '\0';
+        if (mq_send(message_queue, (char*)(&transfer_object), sizeof(transfer_object_t), 0) == -1) {
+            return 1;
+        }
+    }
+    transfer_object.content[0] = '\0';
+    return mq_send(message_queue, (char*)(&transfer_object), sizeof(transfer_object_t), 0);
+}
