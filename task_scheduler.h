@@ -18,6 +18,10 @@
 
 // data types  //
 
+typedef struct {
+    pid_t pid;
+    char content[256];
+} transfer_object_t;
 
 typedef struct {
     unsigned long id;
