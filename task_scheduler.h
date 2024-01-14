@@ -35,9 +35,11 @@ typedef struct {
 
 // Structure with data needed to run a task.
 typedef struct {
-    unsigned long id;
-    pid_t pid;
-    timer_t timer;
+    pid_t pid; // pid of task giver.
+    timer_t timer; // timer.
+    unsigned long id; // id of task.
+    unsigned long number_of_fields; // number of fields sent by task giver.
+    char** data_fields; // fields sent by task giver.
 } task_t;
 
 // Tasks linked list node.
