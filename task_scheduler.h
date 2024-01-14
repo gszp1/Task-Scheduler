@@ -36,4 +36,5 @@ typedef struct {
 
 // functions declarations //
 
+int task_list_init(tasks_list_t* tasks_list);
 #endif //TASK_SCHEDULER_TASK_SCHEDULER_H

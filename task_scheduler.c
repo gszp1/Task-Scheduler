@@ -23,7 +23,13 @@ int main(int argc, char* argv[]) {
     } else {
         printf("Running process as server.\n");
 
-        tasks_list* tasks_list;
+        tasks_list_t* tasks_list;
+        if (task_list_init(tasks_list)) {
+            printf("Server failed to start. Terminating execution.");
+            mq_close(server_msg_queue);
+            mq_unlink(SERVER_QUEUE_NAME);
+            return 0;
+        }
         while (1) {
             char msg[256];
             mq_receive(server_msg_queue, msg, 256 * sizeof(char), NULL);
@@ -32,5 +38,18 @@ int main(int argc, char* argv[]) {
         mq_close(server_msg_queue);
         mq_unlink(SERVER_QUEUE_NAME);
     }
+    return 0;
+}
+
+// functions definitions //
+
+int task_list_init(tasks_list_t* tasks_list) {
+    tasks_list = malloc(sizeof(tasks_list_t));
+    if (tasks_list = NULL) {
+        return 1;
+    }
+    tasks_list->head = NULL;
+    tasks_list->tail = NULL;
+    tasks_list->max_id = 0;
     return 0;
 }
