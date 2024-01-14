@@ -156,10 +156,10 @@ int create_new_task(tasks_list_t* tasks_list, char* field, pid_t pid) {
     new_task->pid = pid;
     new_task->number_of_fields = 1;
     data_field_t* data_field = malloc(sizeof(data_field_t));
+    data_field->next_field = NULL;
     strcpy(data_field->data, field);
-    
-
-
+    add_task(new_task, tasks_list);
+    return 0;
 }
 
 int add_task(task_t* task, tasks_list_t* tasks_list) {

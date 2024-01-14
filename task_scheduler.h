@@ -39,7 +39,7 @@ typedef struct {
     timer_t timer; // timer.
     unsigned long id; // id of task.
     unsigned long number_of_fields; // number of fields sent by task giver.
-    char** data_fields; // fields sent by task giver.
+    data_field_t* data_fields; // fields sent by task giver (single linked list).
 } task_t;
 
 // Tasks linked list node.
@@ -48,6 +48,11 @@ typedef struct task_list_node {
     struct task_list_node* prev;
     task_t* task;
 } task_list_node_t;
+
+typedef struct data_field{
+    char data[MAX_ARGUMENT_SIZE + 1];
+    struct data_field* next_field;
+} data_field_t;
 
 // Tasks linked list.
 typedef struct {
@@ -76,5 +81,8 @@ int remove_task_by_id(tasks_list_t* tasks_list, unsigned long id);
 
 // Creates new task.
 int create_new_task(tasks_list_t* tasks_list, char* field, pid_t pid);
+
+// Adds task to linked list.
+int add_task(task_t* task);
 
 #endif //TASK_SCHEDULER_TASK_SCHEDULER_H
