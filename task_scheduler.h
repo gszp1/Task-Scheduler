@@ -21,9 +21,9 @@
 // data types  //
 
 typedef enum {
-    ADD_TASK = 0,
-    LIST_TASKS = 1,
-    REMOVE_TASK = 2
+    ADD_TASK = 1,
+    LIST_TASKS = 2,
+    REMOVE_TASK = 3
 } query_type_t;
 
 // Structure for object transferred by queue.
@@ -64,5 +64,7 @@ void tasks_list_destroy(tasks_list_t* tasks_list);
 
 // Send program arguments to server.
 int queue_send_arguments(int argc, char* argv[], mqd_t message_queue);
+
+int get_query_type(char* flag);
 
 #endif //TASK_SCHEDULER_TASK_SCHEDULER_H
