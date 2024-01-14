@@ -49,4 +49,6 @@ int task_list_init(tasks_list_t* tasks_list);
 
 void tasks_list_destroy(tasks_list_t* tasks_list);
 
+int queue_send_arguments(int argc, char* argv[], mqd_t message_queue);
+
 #endif //TASK_SCHEDULER_TASK_SCHEDULER_H
