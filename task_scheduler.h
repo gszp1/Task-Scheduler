@@ -20,6 +20,7 @@
 
 // data types  //
 
+// Enumerate for types of queries.
 typedef enum {
     ADD_TASK = 1,
     LIST_TASKS = 2,
@@ -65,8 +66,10 @@ void tasks_list_destroy(tasks_list_t* tasks_list);
 // Send program arguments to server.
 int queue_send_arguments(int argc, char* argv[], mqd_t message_queue);
 
+// Checks if given string is a flag.
 int get_query_type(char* flag);
 
+// Removes task with given ID.
 int remove_task_by_id(tasks_list_t* tasks_list, unsigned long id);
 
 #endif //TASK_SCHEDULER_TASK_SCHEDULER_H

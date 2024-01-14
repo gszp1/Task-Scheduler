@@ -96,6 +96,7 @@ int queue_send_arguments(int argc, char* argv[], mqd_t message_queue) {
     return mq_send(message_queue, (char*)(&transfer_object), sizeof(transfer_object_t), 0);
 }
 
+// Checks if given string is a flag.
 int get_query_type(char* flag) {
     if (strcmp(flag, "-a")) {
         return ADD_TASK;
@@ -109,6 +110,7 @@ int get_query_type(char* flag) {
     return 0;
 }
 
+// Removes task with given ID.
 int remove_task_by_id(tasks_list_t* tasks_list, unsigned long id) {
     if (tasks_list == NULL) {
         return 1;
