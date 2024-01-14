@@ -4,7 +4,7 @@
 // Macros //
 #define SERVER_QUEUE_NAME "/server_queue"
 
-#define MAX_MESSAGES 50
+#define MAX_MESSAGES 10
 
 // Includes //
 #include <stdio.h>
