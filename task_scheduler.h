@@ -11,5 +11,7 @@
 #include <stdlib.h>
 #include <mqueue.h>
 #include <errno.h>
+#include <fcntl.h>
+#include <sys/stat.h>
 
 #endif //TASK_SCHEDULER_TASK_SCHEDULER_H
