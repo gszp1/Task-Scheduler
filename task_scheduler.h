@@ -74,4 +74,7 @@ int get_query_type(char* flag);
 // Removes task with given ID.
 int remove_task_by_id(tasks_list_t* tasks_list, unsigned long id);
 
+// Creates new task.
+int create_new_task(tasks_list_t* tasks_list, char* field, pid_t pid);
+
 #endif //TASK_SCHEDULER_TASK_SCHEDULER_H
