@@ -21,10 +21,13 @@
 typedef struct {
     void* head;
     void* tail;
+    unsigned long max_id;
 } tasks_list;
 
-// functions declarations //
+typedef struct {
 
-int send_
+} task;
+
+// functions declarations //
 
 #endif //TASK_SCHEDULER_TASK_SCHEDULER_H
