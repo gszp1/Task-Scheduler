@@ -6,7 +6,7 @@ pthread_mutex_t task_access_mutex = PTHREAD_MUTEX_INITIALIZER;
 
 // main function //
 
-int main(int argc, char* argv[]) {
+int main(int argc, char* argv[], char* envp[]) {
     // main server queue attributes
     struct mq_attr server_msg_queue_attributes;
     server_msg_queue_attributes.mq_maxmsg = MAX_MESSAGES;
@@ -20,6 +20,7 @@ int main(int argc, char* argv[]) {
         // temporary reading and printing program arguments.
         server_msg_queue  = mq_open(SERVER_QUEUE_NAME, O_WRONLY, 0666, &server_msg_queue_attributes);
         if (server_msg_queue == -1) {
+            printf("Failed to connect with server queue.");
             return -1;
         }
         for (int i = 1; i < argc; ++i) {
