@@ -16,3 +16,9 @@ program powinien mieć możliwość zapisywania logów z wykorzystaniem bibliote
 zakończenie pracy programu powinno być równoznaczne z anulowaniem wszystkich zaplanowanych zadań;
 aplikacja powinna być zgodna ze standardami POSIX i języka C.
 
+Program commands are inserted through command line.
+Run command:
+./task_scheduler -flag -time_flag <time> <path> <args>
+where:
+-flag ---> -a (add task) , -ls (print all tasks), -rm (remove task)
+-time_flag ---> -c (cyclic), -b (absolute time), default is relative time in seconds
