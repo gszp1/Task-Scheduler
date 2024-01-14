@@ -18,23 +18,24 @@
 
 // data types  //
 
-typedef struct {
-    task_t* head;
-    task_t* tail;
-    unsigned long max_id;
-} tasks_list_t;
-
-typedef struct {
-    task_t* next;
-    task_t* prev;
-    task_t* task;
-} task_list_node_t;
 
 typedef struct {
     unsigned long id;
     pid_t pid;
     timer_t timer;
 } task_t;
+
+typedef struct task_list_node {
+    struct task_list_node* next;
+    struct task_list_node* prev;
+    task_t* task;
+} task_list_node_t;
+
+typedef struct {
+    task_list_node_t* head;
+    task_list_node_t* tail;
+    unsigned long max_id;
+} tasks_list_t;
 
 // functions declarations //
 
