@@ -40,4 +40,6 @@ typedef struct {
 
 int task_list_init(tasks_list_t* tasks_list);
 
+void task_list_destroy(tasks_list_t* tasks_list);
+
 #endif //TASK_SCHEDULER_TASK_SCHEDULER_H
