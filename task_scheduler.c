@@ -12,16 +12,16 @@ int main(int argc, char* argv[]) {
     //program flow - true -> client | false -> server
     if ((server_msg_queue == -1) && (errno == EEXIST)) {
         //client
+        printf("Running process as client.");
         server_msg_queue  = mq_open(SERVER_QUEUE_NAME, O_WRONLY, 0666, &server_msg_queue_attributes);
         if (server_msg_queue == -1) {
             return -1;
         }
         mq_close(server_msg_queue);
     } else {
+        printf("Running process as server.");
         //server
-        while (1) {
-
-        }
+        while (getchar() != 'q');
         mq_close(server_msg_queue);
         mq_unlink(SERVER_QUEUE_NAME);
     }
