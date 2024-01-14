@@ -1,9 +1,5 @@
 #include "task_scheduler.h"
 
-// global variables and mutexes //
-
-pthread_mutex_t task_access_mutex = PTHREAD_MUTEX_INITIALIZER;
-
 // main function //
 
 int main(int argc, char* argv[], char* envp[]) {
@@ -54,13 +50,17 @@ int main(int argc, char* argv[], char* envp[]) {
 // functions definitions //
 
 int task_list_init(tasks_list_t* tasks_list) {
+    if (tasks_list != NULL) { // list was already initialized.
+        return 1;
+    }
     tasks_list = malloc(sizeof(tasks_list_t));
-    if (tasks_list = NULL) {
+    if (tasks_list == NULL) { // failed to allocate memory to list
         return 1;
     }
     tasks_list->head = NULL;
     tasks_list->tail = NULL;
     tasks_list->max_id = 0;
+    pthread_mutex_init(&(tasks_list->list_access_mutex), NULL);
     return 0;
 }
 
@@ -69,5 +69,6 @@ void tasks_list_destroy(tasks_list_t* tasks_list) {
         return;
     }
     // todo: remove nodes and all resources allocated by them.
+    pthread_mutex_destroy(&(tasks_list->list_access_mutex));
     free(tasks_list);
 }
