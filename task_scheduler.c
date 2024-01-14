@@ -118,8 +118,9 @@ int remove_task_by_id(tasks_list_t* tasks_list, unsigned long id) {
     while(current_node != NULL) {
         if (current_node->task->id == id) {
             // todo: stop and remove clock
-            if (current_node == tasks_list->tail == tasks_list->head) {
-                tasks_list->tail = tasks_list->head = NULL;
+            if ((current_node == tasks_list->tail) && (current_node == tasks_list->head)) {
+                tasks_list->tail = NULL;
+                tasks_list->head = NULL;
             } else {
                 if (current_node->prev != NULL) {
                     current_node->prev->next = current_node->next;
