@@ -22,9 +22,9 @@
 
 // Enumerate for types of queries.
 typedef enum {
-    ADD_TASK = 1,
-    LIST_TASKS = 2,
-    REMOVE_TASK = 3
+    ADD_TASK = 1, // -a
+    LIST_TASKS = 2, // -ls
+    REMOVE_TASK = 3 // -rm
 } query_type_t;
 
 // Structure for object transferred by queue.
