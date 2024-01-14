@@ -19,6 +19,12 @@
 
 // data types  //
 
+typedef enum {
+    ADD_TASK = 0,
+    LIST_TASKS = 1,
+    REMOVE_TASK = 2
+} query_type_t;
+
 // Structure for object transferred by queue.
 typedef struct {
     pid_t pid;
