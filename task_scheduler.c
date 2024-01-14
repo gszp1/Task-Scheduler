@@ -108,3 +108,36 @@ int get_query_type(char* flag) {
     }
     return 0;
 }
+
+int remove_task_by_id(tasks_list_t* tasks_list, unsigned long id) {
+    if (tasks_list == NULL) {
+        return 1;
+    }
+    pthread_mutex_lock(&(tasks_list->list_access_mutex));
+    task_list_node_t* current_node = tasks_list->head;
+    while(current_node != NULL) {
+        if (current_node->task->id == id) {
+            // todo: stop and remove clock
+            if (current_node == tasks_list->tail == tasks_list->head) {
+                tasks_list->tail = tasks_list->head = NULL;
+            } else {
+                if (current_node->prev != NULL) {
+                    current_node->prev->next = current_node->next;
+                    if (current_node == tasks_list->tail) {
+                        tasks_list->tail = current_node->prev;
+                    }
+                }
+                if (current_node->next != NULL) {
+                    current_node->next->prev = current_node->prev;
+                    if (current_node == tasks_list->head) {
+                        tasks_list->head = current_node->next;
+                    }
+                }
+            }
+            free(current_node);
+            break;
+        }
+    }
+    pthread_mutex_unlock(&(tasks_list->list_access_mutex));
+    return 0;
+}
