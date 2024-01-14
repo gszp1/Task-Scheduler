@@ -19,36 +19,43 @@
 
 // data types  //
 
+// Structure for object transferred by queue.
 typedef struct {
     pid_t pid;
     char content[MAX_ARGUMENT_SIZE + 1];
 } transfer_object_t;
 
+// Structure with data needed to run a task.
 typedef struct {
     unsigned long id;
     pid_t pid;
     timer_t timer;
 } task_t;
 
+// Tasks linked list node.
 typedef struct task_list_node {
     struct task_list_node* next;
     struct task_list_node* prev;
     task_t* task;
 } task_list_node_t;
 
+// Tasks linked list.
 typedef struct {
     task_list_node_t* head;
     task_list_node_t* tail;
-    unsigned long max_id;
     pthread_mutex_t list_access_mutex;
+    unsigned long max_id;
 } tasks_list_t;
 
 // functions declarations //
 
+// Initialize tasks linked list.
 int task_list_init(tasks_list_t* tasks_list);
 
+// Destroy tasks linked list.
 void tasks_list_destroy(tasks_list_t* tasks_list);
 
+// Send program arguments to server.
 int queue_send_arguments(int argc, char* argv[], mqd_t message_queue);
 
 #endif //TASK_SCHEDULER_TASK_SCHEDULER_H

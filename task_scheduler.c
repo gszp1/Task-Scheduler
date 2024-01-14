@@ -13,15 +13,18 @@ int main(int argc, char* argv[], char* envp[]) {
     mqd_t server_msg_queue = mq_open(SERVER_QUEUE_NAME, O_CREAT | O_EXCL | O_RDONLY, 0666, &server_msg_queue_attributes);
     if ((server_msg_queue == -1) && (errno == EEXIST)) {
         printf("Running process as client.\n");
+
         server_msg_queue  = mq_open(SERVER_QUEUE_NAME, O_WRONLY, 0666, &server_msg_queue_attributes);
         if (server_msg_queue == -1) {
             printf("Failed to connect with server queue.\n");
             return 1;
         }
+
         if (queue_send_arguments(argc, argv, server_msg_queue)) {
             printf("Failed to send arguments.\n");
             return 2;
         }
+
         mq_close(server_msg_queue);
     } else {
         printf("Running process as server.\n");
@@ -48,6 +51,7 @@ int main(int argc, char* argv[], char* envp[]) {
 
 // functions definitions //
 
+// Initialize tasks linked list.
 int task_list_init(tasks_list_t* tasks_list) {
     if (tasks_list != NULL) { // list was already initialized.
         return 1;
@@ -63,6 +67,7 @@ int task_list_init(tasks_list_t* tasks_list) {
     return 0;
 }
 
+// Destroy tasks linked list.
 void tasks_list_destroy(tasks_list_t* tasks_list) {
     if (tasks_list == NULL) {
         return;
@@ -72,6 +77,7 @@ void tasks_list_destroy(tasks_list_t* tasks_list) {
     free(tasks_list);
 }
 
+// Send program arguments to server.
 int queue_send_arguments(int argc, char* argv[], mqd_t message_queue) {
     transfer_object_t transfer_object;
     transfer_object.pid = getpid();
