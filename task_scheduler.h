@@ -13,6 +13,8 @@
 #include <errno.h>
 #include <fcntl.h>
 #include <sys/stat.h>
+#include <time.h>
+#include <unistd.h>
 
 // data types  //
 
@@ -20,5 +22,9 @@ typedef struct {
     void* head;
     void* tail;
 } tasks_list;
+
+// functions declarations //
+
+int send_
 
 #endif //TASK_SCHEDULER_TASK_SCHEDULER_H
