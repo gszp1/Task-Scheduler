@@ -13,23 +13,14 @@ int main(int argc, char* argv[], char* envp[]) {
     mqd_t server_msg_queue = mq_open(SERVER_QUEUE_NAME, O_CREAT | O_EXCL | O_RDONLY, 0666, &server_msg_queue_attributes);
     if ((server_msg_queue == -1) && (errno == EEXIST)) {
         printf("Running process as client.\n");
-        // temporary reading and printing program arguments.
         server_msg_queue  = mq_open(SERVER_QUEUE_NAME, O_WRONLY, 0666, &server_msg_queue_attributes);
         if (server_msg_queue == -1) {
-            printf("Failed to connect with server queue.");
-            return -1;
+            printf("Failed to connect with server queue.\n");
+            return 1;
         }
-        for (int i = 1; i < argc; ++i) {
-            printf("%s\n", argv[i]);
-            transfer_object_t transfer_object;
-            int counter = 0;
-            while (argv[i][counter] != '\0' && counter < MAX_ARGUMENT_SIZE) {
-                transfer_object.content[counter] = argv[i][counter];
-                ++counter;
-            }
-            transfer_object.content[counter] = '\0';
-            transfer_object.pid = getpid();
-            printf("%d\n", mq_send(server_msg_queue, (char*)(&transfer_object), sizeof(transfer_object_t), 0));
+        if (queue_send_arguments(argc, argv, server_msg_queue)) {
+            printf("Failed to send arguments.\n");
+            return 2;
         }
         mq_close(server_msg_queue);
     } else {
