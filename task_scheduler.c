@@ -61,3 +61,11 @@ int task_list_init(tasks_list_t* tasks_list) {
     tasks_list->max_id = 0;
     return 0;
 }
+
+void task_list_destroy(tasks_list_t* tasks_list) {
+    if (tasks_list == NULL) {
+        return;
+    }
+    // todo: remove nodes and all resources allocated by them.
+    free(tasks_list);
+}
