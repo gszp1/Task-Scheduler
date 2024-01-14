@@ -67,4 +67,6 @@ int queue_send_arguments(int argc, char* argv[], mqd_t message_queue);
 
 int get_query_type(char* flag);
 
+int remove_task_by_id(tasks_list_t* tasks_list, unsigned long id);
+
 #endif //TASK_SCHEDULER_TASK_SCHEDULER_H
