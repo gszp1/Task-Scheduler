@@ -83,6 +83,6 @@ int remove_task_by_id(tasks_list_t* tasks_list, unsigned long id);
 int create_new_task(tasks_list_t* tasks_list, char* field, pid_t pid);
 
 // Adds task to linked list.
-int add_task(task_t* task);
+int add_task(task_t* task, tasks_list_t* tasks_list);
 
 #endif //TASK_SCHEDULER_TASK_SCHEDULER_H
