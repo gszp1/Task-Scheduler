@@ -138,6 +138,7 @@ int remove_task_by_id(tasks_list_t* tasks_list, unsigned long id) {
             free(current_node);
             break;
         }
+        current_node = current_node->next;
     }
     pthread_mutex_unlock(&(tasks_list->list_access_mutex));
     return 0;
