@@ -95,3 +95,16 @@ int queue_send_arguments(int argc, char* argv[], mqd_t message_queue) {
     transfer_object.content[0] = '\0';
     return mq_send(message_queue, (char*)(&transfer_object), sizeof(transfer_object_t), 0);
 }
+
+int get_query_type(char* flag) {
+    if (strcmp(flag, "-a")) {
+        return ADD_TASK;
+    }
+    if (strcmp(flag, "-rm")) {
+        return REMOVE_TASK;
+    }
+    if (strcmp(flag, "-ls")) {
+        return LIST_TASKS;
+    }
+    return 0;
+}
