@@ -33,6 +33,7 @@ typedef struct {
     char content[MAX_ARGUMENT_SIZE + 1];
 } transfer_object_t;
 
+// Node containing data sent by user.
 typedef struct data_field{
     char data[MAX_ARGUMENT_SIZE + 1];
     struct data_field* next_field;
