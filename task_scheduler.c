@@ -43,6 +43,7 @@ int main(int argc, char* argv[]) {
             mq_receive(server_msg_queue, msg, 256 * sizeof(char), NULL);
             printf("%s\n", msg);
         }// temporary, change to proper requests handling later
+        tasks_list_destroy(tasks_list);
         mq_close(server_msg_queue);
         mq_unlink(SERVER_QUEUE_NAME);
     }
@@ -62,7 +63,7 @@ int task_list_init(tasks_list_t* tasks_list) {
     return 0;
 }
 
-void task_list_destroy(tasks_list_t* tasks_list) {
+void tasks_list_destroy(tasks_list_t* tasks_list) {
     if (tasks_list == NULL) {
         return;
     }
