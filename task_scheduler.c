@@ -203,7 +203,17 @@ int add_data_to_task(tasks_list_t* tasks_list, pid_t pid, char* data) {
     if (node == NULL) {
         return 2;
     }
-    
-
+    data_field_t* data_field = malloc(sizeof(data_field_t));
+    if (data_field == NULL) {
+        return 3;
+    }
+    data_field->next_field = NULL;
+    strcpy(data_field->data, data);
+    if(node->task->data_fields == NULL) {
+        node->task->data_fields = data_field;
+    } else {
+        node->task->data_fields->next_field = data_field;
+    }
+    node->task->number_of_fields += 1;
     return 0;
 }
