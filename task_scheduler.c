@@ -124,15 +124,14 @@ int remove_task_by_id(tasks_list_t* tasks_list, unsigned long id) {
             } else {
                 if (current_node->prev != NULL) {
                     current_node->prev->next = current_node->next;
-                    if (current_node == tasks_list->tail) {
-                        tasks_list->tail = current_node->prev;
-                    }
+                } else {
+                    tasks_list->head = current_node->next;
                 }
+
                 if (current_node->next != NULL) {
                     current_node->next->prev = current_node->prev;
-                    if (current_node == tasks_list->head) {
-                        tasks_list->head = current_node->next;
-                    }
+                } else {
+                    tasks_list->tail = current_node->prev;
                 }
             }
             free(current_node);
