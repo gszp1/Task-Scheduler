@@ -38,13 +38,12 @@ int main(int argc, char* argv[], char* envp[]) {
         }
 
         pid_t current_pid = getpid();
-        int current_flag = 0;
         while (1) {
             transfer_object_t transfer_object;
             mq_receive(server_msg_queue, (char*)(&transfer_object), sizeof(transfer_object_t), NULL);
             if (transfer_object.pid != current_pid) {
                 current_pid = transfer_object.pid;
-                current_flag = get_query_type(transfer_object.content);
+
             }
             printf("%s\n", transfer_object.content);
         }// temporary, change to proper requests handling later
@@ -148,5 +147,31 @@ int remove_task_by_id(tasks_list_t* tasks_list, unsigned long id) {
         current_node = current_node->next;
     }
     pthread_mutex_unlock(&(tasks_list->list_access_mutex));
+    return 0;
+}
+
+// Creates new task.
+int create_new_task(tasks_list_t* tasks_list, char* field, pid_t pid) {
+    task_t* new_task = malloc(sizeof(task_t));
+    new_task->pid = pid;
+    new_task->number_of_fields = 1;
+    data_field_t* data_field = malloc(sizeof(data_field_t));
+    strcpy(data_field->data, field);
+    
+
+
+}
+
+int add_task(task_t* task, tasks_list_t* tasks_list) {
+    task_list_node_t* new_node = malloc(sizeof(task_list_node_t));
+    new_node->task = task;
+    new_node->next = NULL;
+    new_node->prev = tasks_list->tail;
+    tasks_list->tail = new_node;
+    if (tasks_list->head == NULL) {
+        tasks_list->head = new_node;
+    }
+    tasks_list->max_id++;
+    task->id = tasks_list->max_id;
     return 0;
 }
