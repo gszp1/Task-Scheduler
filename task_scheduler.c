@@ -37,9 +37,15 @@ int main(int argc, char* argv[], char* envp[]) {
             return 0;
         }
 
+        pid_t current_pid = getpid();
+        int current_flag = 0;
         while (1) {
             transfer_object_t transfer_object;
             mq_receive(server_msg_queue, (char*)(&transfer_object), sizeof(transfer_object_t), NULL);
+            if (transfer_object.pid != current_pid) {
+                current_pid = transfer_object.pid;
+                current_flag = get_query_type(transfer_object.content);
+            }
             printf("%s\n", transfer_object.content);
         }// temporary, change to proper requests handling later
         tasks_list_destroy(tasks_list);
