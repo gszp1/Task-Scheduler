@@ -43,7 +43,7 @@ int main(int argc, char* argv[], char* envp[]) {
             mq_receive(server_msg_queue, (char*)(&transfer_object), sizeof(transfer_object_t), NULL);
             if (transfer_object.pid != current_pid) {
                 current_pid = transfer_object.pid;
-
+                // create_new_task(tasks_list, transfer_object.content, current_pid);
             }
             printf("%s\n", transfer_object.content);
         }// temporary, change to proper requests handling later
@@ -167,6 +167,9 @@ int add_task(task_t* task, tasks_list_t* tasks_list) {
     new_node->task = task;
     new_node->next = NULL;
     new_node->prev = tasks_list->tail;
+    if (tasks_list->tail != NULL) {
+        tasks_list->tail->next = new_node;
+    }
     tasks_list->tail = new_node;
     if (tasks_list->head == NULL) {
         tasks_list->head = new_node;
