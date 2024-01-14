@@ -19,20 +19,20 @@
 // data types  //
 
 typedef struct {
-    task* head;
-    task* tail;
+    task_t* head;
+    task_t* tail;
     unsigned long max_id;
-} tasks_list;
+} tasks_list_t;
 
 typedef struct {
-    task* next;
-    task* prev;
-    task* task;
-} task_list_node;
+    task_t* next;
+    task_t* prev;
+    task_t* task;
+} task_list_node_t;
 
 typedef struct {
     unsigned long id;
-} task;
+} task_t;
 
 // functions declarations //
 

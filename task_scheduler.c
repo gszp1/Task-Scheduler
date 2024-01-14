@@ -22,6 +22,8 @@ int main(int argc, char* argv[]) {
         mq_close(server_msg_queue);
     } else {
         printf("Running process as server.\n");
+
+        tasks_list* tasks_list;
         while (1) {
             char msg[256];
             mq_receive(server_msg_queue, msg, 256 * sizeof(char), NULL);
