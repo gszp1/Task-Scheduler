@@ -33,6 +33,11 @@ typedef struct {
     char content[MAX_ARGUMENT_SIZE + 1];
 } transfer_object_t;
 
+typedef struct data_field{
+    char data[MAX_ARGUMENT_SIZE + 1];
+    struct data_field* next_field;
+} data_field_t;
+
 // Structure with data needed to run a task.
 typedef struct {
     pid_t pid; // pid of task giver.
@@ -48,11 +53,6 @@ typedef struct task_list_node {
     struct task_list_node* prev;
     task_t* task;
 } task_list_node_t;
-
-typedef struct data_field{
-    char data[MAX_ARGUMENT_SIZE + 1];
-    struct data_field* next_field;
-} data_field_t;
 
 // Tasks linked list.
 typedef struct {
