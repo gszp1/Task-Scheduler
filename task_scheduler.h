@@ -87,6 +87,6 @@ int create_new_task(tasks_list_t* tasks_list, char* field, pid_t pid);
 int add_task(task_t* task, tasks_list_t* tasks_list);
 
 // Finds task by pid.
-task_t* find_task_by_pid(pid_t pid, tasks_list_t* tasks_list);
+task_list_node_t* find_task_by_pid(pid_t pid, tasks_list_t* tasks_list);
 
 #endif //TASK_SCHEDULER_TASK_SCHEDULER_H

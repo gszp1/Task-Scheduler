@@ -178,3 +178,18 @@ int add_task(task_t* task, tasks_list_t* tasks_list) {
     task->id = tasks_list->max_id;
     return 0;
 }
+
+// Finds task by pid.
+task_list_node_t* find_task_by_pid(pid_t pid, tasks_list_t* tasks_list) {
+    if (tasks_list == NULL) {
+        return NULL;
+    }
+    task_list_node_t* current_node = tasks_list->head;
+    while (current_node != NULL) {
+        if (current_node->task->pid == pid) {
+            return current_node;
+        }
+        current_node = current_node->next;
+    }
+    return NULL;
+}
