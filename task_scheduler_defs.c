@@ -243,8 +243,9 @@ static int send_data_to_client(tasks_list_t* tasks_list, mqd_t client_queue) {
     }
     task_list_node_t* current_node = tasks_list->head;
     while (current_node != NULL) {
-        
-        current_node = current_node->next;
+        char data_set[256];
+        // sprintf(data_set, "%lu")
+        // current_node = current_node->next;
     }
 }
 
