@@ -176,6 +176,23 @@ data_field_t* create_data_field(char* data, pid_t pid) {
     return new_data_field;
 }
 
+// message handlers //
+
+// Handler for task removal query
+static int remove_task_query_handler(tasks_list_t* tasks_list, task_list_node_t* task) {
+
+}
+
+// Handler for task addition query
+static int add_task_query_handler(tasks_list_t* tasks_list, task_list_node_t* task) {
+
+}
+
+// Handler for task listing query
+static int list_tasks_query_handler(tasks_list_t* tasks_list, task_list_node_t* task) {
+
+}
+
 // Sets up and runs task.
 int run_task(tasks_list_t* tasks_list, pid_t pid) {
     printf("Starting new task.");
@@ -197,7 +214,7 @@ int run_task(tasks_list_t* tasks_list, pid_t pid) {
     data_field_t* data_field = current_node->task->data_fields;
     switch (get_query_type(data_field->data)) {
         case ADD_TASK:
-            add_task_query_handler(current_node->task);
+            add_task_query_handler(tasks_list, current_node);
             break;
         case LIST_TASKS:
             list_tasks_query_handler(tasks_list, current_node);
@@ -211,21 +228,4 @@ int run_task(tasks_list_t* tasks_list, pid_t pid) {
     }
     pthread_mutex_unlock(&(tasks_list->list_access_mutex));
     return 0;
-}
-
-// message handlers //
-
-// Handler for task removal query
-int remove_task_query_handler(tasks_list_t* tasks_list, task_list_node_t* task) {
-
-}
-
-// Handler for task addition query
-int add_task_query_handler(task_t* task) {
-
-}
-
-// Handler for task listing query
-int list_tasks_query_handler(tasks_list_t* tasks_list, task_list_node_t* task) {
-
 }
