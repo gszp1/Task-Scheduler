@@ -130,23 +130,6 @@ int add_task(task_t* task, tasks_list_t* tasks_list) {
     return 0;
 }
 
-// Finds task by pid.
-task_t* find_task_by_pid(tasks_list_t* tasks_list, pid_t pid) {
-    if (tasks_list == NULL) {
-        return NULL;
-    }
-    pthread_mutex_lock(&(tasks_list->list_access_mutex));
-    task_list_node_t* current_node = tasks_list->head;
-    while (current_node != NULL) {
-        if (current_node->task->pid == pid) {
-            break;
-        }
-        current_node = current_node->next;
-    }
-    pthread_mutex_unlock(&(tasks_list->list_access_mutex));
-    return current_node;
-}
-
 // Adds data field read from queue to task.
 int add_data_to_task(tasks_list_t* tasks_list, pid_t pid, data_field_t* data_field) {
     if (tasks_list == NULL) {
