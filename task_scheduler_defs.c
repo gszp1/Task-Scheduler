@@ -195,12 +195,17 @@ int run_task(tasks_list_t* tasks_list, pid_t pid) {
         return 1;
     }
     data_field_t* data_field = current_node->task->data_fields;
-    printf("Task structure: ");
-    while(data_field != NULL) {
-        printf("%s ", data_field->data);
-        data_field = data_field->next_field;
+    switch (get_query_type(data_field->data)) {
+        case 1:
+            break;
+        case 2:
+            break;
+        case 3:
+            break;
+        default:
+            pthread_mutex_unlock(&(tasks_list->list_access_mutex));
+            return 2;
     }
-    printf("\n"); 
     pthread_mutex_unlock(&(tasks_list->list_access_mutex));
     return 0;
 }
