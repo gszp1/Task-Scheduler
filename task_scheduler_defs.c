@@ -300,15 +300,17 @@ int run_task(tasks_list_t* tasks_list, pid_t pid) {
             break;
         case LIST_TASKS:
             list_tasks_query_handler(tasks_list, current_node);
+            remove_task_by_id(tasks_list, current_node->task->id);
             break;
         case REMOVE_TASK:
             remove_task_query_handler(tasks_list, current_node);
+            remove_task_by_id(tasks_list, current_node->task->id);
             break;
         default:
             pthread_mutex_unlock(&(tasks_list->list_access_mutex));
+            remove_task_by_id(tasks_list, current_node->task->id);
             return 2;
     }
-    remove_task_by_id(tasks_list, current_node->task->id);
     pthread_mutex_unlock(&(tasks_list->list_access_mutex));
     return 0;
 }
