@@ -19,12 +19,19 @@ aplikacja powinna być zgodna ze standardami POSIX i języka C.
 Program commands are inserted through command line.  
 Inserting more flags than required or not providing all required ones, will cause the scheduler to ignore given task, even if it is partially correct.  
 Provide all required arguments, no more, no less.
+Transfering data between processes is based on POSIX queues, namely through mq_queues. The main, server, queue is named /serer_queue.  
+Queue created by user, through which server sends all tasks in the list is named /user_queuepid, where pid is replaced with user's process pid.  
+In both cases, data is transfered in 256 bytes blocks, with the last one being empty. 
 Run command:  
 ./task_scheduler -flag -time_flag <time> <path> <args>  
 where:  
 -flag ---> -a (add task) , -ls (print all tasks), -rm (remove task)  
 -time_flag ---> -c (cyclic), -b (absolute time), default is relative time in seconds  
+2. List tasks command.  
+-  Lists all tasks held on server.
+-  list all tasks command structure: ./task_scheduler_out -ls
+-  wrong command example: ./task_scheduler_out -ls 2137
 3. Remove task command.  
-  remove task structure: ./task_scheduler -rm <task_id>  
-  correct command example: ./task_scheduler -rm 2137  
-  wrong command example: ./task_scheduler -rm 214454 12232 hello
+-  remove task structure: ./task_scheduler_out -rm <task_id>  
+-  correct command example: ./task_scheduler_out -rm 2137  
+-  wrong command example: ./task_scheduler_out -rm 214454 12232 hello
