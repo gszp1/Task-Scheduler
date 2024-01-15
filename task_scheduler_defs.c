@@ -152,9 +152,15 @@ int add_data_to_task(tasks_list_t* tasks_list, pid_t pid, char* data) {
     if (tasks_list == NULL) {
         return 1;
     }
-    task_list_node_t* node = find_task_by_pid(pid, tasks_list);
+    task_list_node_t* node = tasks_list->head;
+    while (node != NULL) {
+        if (node->task->pid == pid) {
+            break;
+        }
+        node = node->next;
+    }
     if (node == NULL) {
-        return 2;
+        return 1;
     }
     data_field_t* data_field = malloc(sizeof(data_field_t));
     if (data_field == NULL) {
