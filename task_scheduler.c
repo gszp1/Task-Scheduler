@@ -22,14 +22,16 @@ int main(int argc, char* argv[], char* envp[]) {
 
         // if user entered command for displaying list of tasks
         int is_list_tasks_query = (get_query_type(argv[1]) == LIST_TASKS) && (argc <= 2);
+        mqd_t user_queue;
+        char user_queue_name[32];
+
         if (is_list_tasks_query) {
-            char user_queue_name[32];
             sprintf(user_queue_name, "%s%d", USER_QUEUE_NAME, getpid());
             struct mq_attr client_queue_attributes;
             client_queue_attributes.mq_maxmsg = 10;
             client_queue_attributes.mq_flags = 0;
             client_queue_attributes.mq_msgsize = 256 * sizeof(char);
-            mqd_t user_queue = mq_open(user_queue_name, O_CREAT | O_EXCL | O_RDONLY, 0666,  &client_queue_attributes);
+            user_queue = mq_open(user_queue_name, O_CREAT | O_EXCL | O_RDONLY, 0666,  &client_queue_attributes);
             if (user_queue == -1) {
                 mq_close(server_msg_queue);
                 printf("Failed to open client queue.\n");
@@ -39,9 +41,19 @@ int main(int argc, char* argv[], char* envp[]) {
 
         if (queue_send_arguments(argc, argv, server_msg_queue)) {
             printf("Failed to send arguments.\n");
+            mq_close(server_msg_queue);
+            if (is_list_tasks_query) {
+                mq_close(user_queue);
+                mq_unlink(user_queue_name);
+            }
             return 2;
         }
-
+        
+        if (is_list_tasks_query) {
+            mq_close(user_queue);
+            mq_unlink(user_queue_name);
+        }
+        
         mq_close(server_msg_queue);
     } else {
         printf("Running process as server.\n");
