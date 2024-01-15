@@ -3,6 +3,7 @@
 
 // Macros //
 #define SERVER_QUEUE_NAME "/server_queue"
+#define USER_QUEUE_NAME "/user_queue"
 #define MAX_MESSAGES 10
 #define MAX_ARGUMENT_SIZE 255
 
