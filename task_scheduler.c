@@ -44,6 +44,12 @@ int main(int argc, char* argv[], char* envp[]) {
             if (transfer_object.pid != current_pid) {
                 current_pid = transfer_object.pid;
                 create_new_task(tasks_list, transfer_object.content, current_pid);
+            } else {
+                if (strcmp("", transfer_object.content)) {
+
+                } else {
+                    add_data_to_task(tasks_list, transfer_object.pid, transfer_object.content);
+                }
             }
             printf("%s\n", transfer_object.content);
         }// temporary, change to proper requests handling later
