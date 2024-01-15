@@ -28,6 +28,11 @@ typedef enum {
     REMOVE_TASK = 3 // -rm
 } query_type_t;
 
+typedef struct {
+    char content[MAX_ARGUMENT_SIZE + 1];
+    char last_record_entry;
+} client_transfer_object_t;
+
 // Structure for object transferred by queue.
 typedef struct {
     pid_t pid;

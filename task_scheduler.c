@@ -53,7 +53,7 @@ int main(int argc, char* argv[], char* envp[]) {
             mq_close(user_queue);
             mq_unlink(user_queue_name);
         }
-        
+
         mq_close(server_msg_queue);
     } else {
         printf("Running process as server.\n");
