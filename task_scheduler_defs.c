@@ -223,7 +223,17 @@ static int list_tasks_query_handler(tasks_list_t* tasks_list, task_list_node_t* 
     if ((tasks_list == NULL) || (task == NULL)) {
         return 1;
     }
-    
+    char queue_name[32];
+    sprintf(queue_name, "%s%d", USER_QUEUE_NAME, task->task->pid);
+    struct mq_attr msg_queue_attributes;
+    msg_queue_attributes.mq_maxmsg = MAX_MESSAGES;
+    msg_queue_attributes.mq_flags = 0;
+    msg_queue_attributes.mq_msgsize = sizeof(transfer_object_t);
+    mqd_t client_queue = mq_open(queue_name, O_WRONLY, 0666, &msg_queue_attributes);
+    if (client_queue == -1) {
+        return 1;
+    }
+    return 0;
 }
 
 // Sets up and runs task.
