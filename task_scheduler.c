@@ -7,7 +7,7 @@ int main(int argc, char* argv[], char* envp[]) {
     struct mq_attr server_msg_queue_attributes;
     server_msg_queue_attributes.mq_maxmsg = MAX_MESSAGES;
     server_msg_queue_attributes.mq_flags = 0;
-    server_msg_queue_attributes.mq_msgsize = sizeof(transfer_object_t); //temporary
+    server_msg_queue_attributes.mq_msgsize = sizeof(transfer_object_t);
 
     // try to create main queue
     mqd_t server_msg_queue = mq_open(SERVER_QUEUE_NAME, O_CREAT | O_EXCL | O_RDONLY, 0666, &server_msg_queue_attributes);
@@ -53,8 +53,7 @@ int main(int argc, char* argv[], char* envp[]) {
                     add_data_to_task(tasks_list, transfer_object.pid, data_field);
                 }
             }
-            // printf("%s\n", transfer_object.content);
-        }// temporary, change to proper requests handling later
+        }
         tasks_list_destroy(tasks_list);
         mq_close(server_msg_queue);
         mq_unlink(SERVER_QUEUE_NAME);
