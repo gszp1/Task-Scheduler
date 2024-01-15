@@ -3,18 +3,18 @@
 // functions definitions //
 
 // Initialize tasks linked list.
-int task_list_init(tasks_list_t* tasks_list) {
-    if (tasks_list != NULL) { // list was already initialized.
+int task_list_init(tasks_list_t** tasks_list) {
+    if (*tasks_list != NULL) { // list was already initialized.
         return 1;
     }
-    tasks_list = malloc(sizeof(tasks_list_t));
+    *tasks_list = malloc(sizeof(tasks_list_t));
     if (tasks_list == NULL) { // failed to allocate memory to list
         return 1;
     }
-    tasks_list->head = NULL;
-    tasks_list->tail = NULL;
-    tasks_list->max_id = 0;
-    pthread_mutex_init(&(tasks_list->list_access_mutex), NULL);
+    (*tasks_list)->head = NULL;
+    (*tasks_list)->tail = NULL;
+    (*tasks_list)->max_id = 0;
+    pthread_mutex_init(&((*tasks_list)->list_access_mutex), NULL);
     return 0;
 }
 
@@ -104,6 +104,7 @@ int create_new_task(tasks_list_t* tasks_list, char* field, pid_t pid) {
     data_field_t* data_field = malloc(sizeof(data_field_t));
     data_field->next_field = NULL;
     strcpy(data_field->data, field);
+    new_task->data_fields = data_field;
     add_task(new_task, tasks_list);
     return 0;
 }

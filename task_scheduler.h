@@ -66,7 +66,7 @@ typedef struct {
 // functions declarations //
 
 // Initialize tasks linked list.
-int task_list_init(tasks_list_t* tasks_list);
+int task_list_init(tasks_list_t** tasks_list);
 
 // Destroy tasks linked list.
 void tasks_list_destroy(tasks_list_t* tasks_list);
