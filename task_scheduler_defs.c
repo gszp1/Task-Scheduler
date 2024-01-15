@@ -96,6 +96,7 @@ int remove_task_by_id(tasks_list_t* tasks_list, unsigned long id) {
     return 0;
 }
 
+// Adds task to tasks list.
 int add_task(task_t* task, tasks_list_t* tasks_list) {
     task_list_node_t* new_node = malloc(sizeof(task_list_node_t));
     if (new_node == NULL) {
