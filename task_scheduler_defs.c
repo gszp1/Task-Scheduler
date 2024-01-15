@@ -215,8 +215,8 @@ static int send_data_to_client(tasks_list_t* tasks_list, mqd_t client_queue) {
 // Converts time in form of string (seconds or timestamp) to seconds.
 static unsigned long get_time(char* time_string, int* time_type) {
     //timestamp: YYYY-MM-DDThh:mm:ss
-    if (strlen(time_string) == 19) {
-
+    if (is_iso8601_date(time_string) == 1) {
+        
     }
 }
 

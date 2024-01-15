@@ -105,4 +105,7 @@ data_field_t* create_data_field(char* data, pid_t pid);
 // Checks if date stored in string is ISO 8601 compliant. YYYY-MM-DDThh:mm:ss
 int is_iso8601_date(char* string);
 
+// Parses iso8601 date to seconds.
+unsigned long parse_iso8601_date_to_seconds(char* string);
+
 #endif //TASK_SCHEDULER_TASK_SCHEDULER_H
