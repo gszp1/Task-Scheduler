@@ -169,3 +169,8 @@ data_field_t* create_data_field(char* data, pid_t pid) {
     strcmp(new_data_field->data, data);
     return new_data_field;
 }
+
+// Sets up and runs task.
+int run_task(pid_t pid) {
+    printf("Starting new task.");
+}

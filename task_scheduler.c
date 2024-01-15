@@ -46,8 +46,8 @@ int main(int argc, char* argv[], char* envp[]) {
                 task_t* new_task = create_new_task(transfer_object.content, transfer_object.pid);
                 add_task(new_task, tasks_list);
             } else {
-                if (strcmp("", transfer_object.content)) {
-                    
+                if (strcmp("", transfer_object.content) == 0) {
+                    run_task(transfer_object.pid);
                 } else {
                     data_field_t* data_field = create_data_field(transfer_object.content, transfer_object.pid);
                     add_data_to_task(tasks_list, transfer_object.pid, data_field);
