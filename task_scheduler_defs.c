@@ -169,3 +169,17 @@ int add_data_to_task(tasks_list_t* tasks_list, pid_t pid, char* data) {
     return 0;
 }
 
+
+// Creates new data field.
+data_field_t* create_data_field(char* data, pid_t pid) {
+    if (data == NULL) {
+        return NULL;
+    }
+    data_field_t* new_data_field = malloc(sizeof(data_field_t));
+    if (new_data_field == NULL) {
+        return NULL;
+    }
+    new_data_field->next_field = NULL;
+    strcmp(new_data_field->data, data);
+    return new_data_field;
+}

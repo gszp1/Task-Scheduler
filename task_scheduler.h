@@ -84,7 +84,7 @@ int remove_task_by_id(tasks_list_t* tasks_list, unsigned long id);
 task_t* create_new_task(char* field, pid_t pid); 
 
 // Creates new data field.
-data_field* create_data_field(char* data, pid_t pid);
+data_field_t* create_data_field(char* data, pid_t pid);
 
 // Adds task to linked list.
 int add_task(task_t* task, tasks_list_t* tasks_list);
