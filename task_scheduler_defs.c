@@ -177,6 +177,24 @@ int run_task(tasks_list_t* tasks_list, pid_t pid) {
         return 1;
     }
     pthread_mutex_lock(&(tasks_list->list_access_mutex));
+    task_list_node_t* current_node = tasks_list->head;
+    while (current_node != NULL) {
+        if (current_node->task->pid == pid) {
+            break;
+        }
+        current_node = current_node->next;
+    }
+    if (current_node == NULL) {
+        pthread_mutex_unlock(&(tasks_list->list_access_mutex));
+        return 1;
+    }
+    data_field_t* data_field = current_node->task->data_fields;
+    printf("Task structure: ");
+    while(data_field != NULL) {
+        printf("%s ", data_field->data);
+        data_field = data_field->next_field;
+    }
+    printf("\n"); 
     pthread_mutex_unlock(&(tasks_list->list_access_mutex));
     return 0;
 }

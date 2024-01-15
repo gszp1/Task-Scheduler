@@ -53,7 +53,7 @@ int main(int argc, char* argv[], char* envp[]) {
                     add_data_to_task(tasks_list, transfer_object.pid, data_field);
                 }
             }
-            printf("%s\n", transfer_object.content);
+            // printf("%s\n", transfer_object.content);
         }// temporary, change to proper requests handling later
         tasks_list_destroy(tasks_list);
         mq_close(server_msg_queue);
