@@ -23,7 +23,7 @@ int main(int argc, char* argv[], char* envp[]) {
         // if user entered command for displaying list of tasks
         int is_list_tasks_query = 0;
         if (argc > 1) {
-            int is_list_tasks_query = (get_query_type(argv[1]) == LIST_TASKS) && (argc <= 2);
+            is_list_tasks_query = (get_query_type(argv[1]) == LIST_TASKS) && (argc <= 2);
         }
         mqd_t user_queue;
         char user_queue_name[32];
@@ -54,19 +54,23 @@ int main(int argc, char* argv[], char* envp[]) {
 
         if (is_list_tasks_query) {
             char reading_finished = 0;
+            char first_field = 1;
             while (reading_finished == 0) {
                 client_transfer_object_t transfer_object;
                 mq_receive(user_queue, (char*)(&transfer_object), sizeof(client_transfer_object_t), 0);
-                if (transfer_object.last_record_entry == 1) {
+                if (transfer_object.content[0] == '\0') {
                     printf("\n");
                     reading_finished = 1;
                     continue;
                 }
-                printf("%s", transfer_object.content);
+                printf("%s ", transfer_object.content);
+                if (first_field == 1) {
+                    printf("| ");
+                    first_field = 0;
+                }
                 if(transfer_object.last_record_entry == 1) {
                     printf("\n");
-                } else {
-                    printf(" | ");
+                    first_field = 1;
                 }
             }
             mq_close(user_queue);
