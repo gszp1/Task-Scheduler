@@ -130,8 +130,8 @@ int add_task(task_t* task, tasks_list_t* tasks_list) {
     return 0;
 }
 
-// Finds task by pid. Used inside other thread safe functions, it is by itself not thread safe
-task_list_node_t* find_task_by_pid(pid_t pid, tasks_list_t* tasks_list) {
+// Finds task by pid.
+task_list_node_t* find_task_by_pid(tasks_list_t* tasks_list, pid_t pid) {
     if (tasks_list == NULL) {
         return NULL;
     }
