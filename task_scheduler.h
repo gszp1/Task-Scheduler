@@ -89,10 +89,13 @@ int add_data_to_task(tasks_list_t* tasks_list, pid_t pid, data_field_t* data_fie
 // Sets up and runs task.
 int run_task(tasks_list_t* tasks_list, pid_t pid);
 
+// fabrication functions //
+
 // Creates new task.
 task_t* create_new_task(char* field, pid_t pid); 
 
 // Creates new data field.
 data_field_t* create_data_field(char* data, pid_t pid);
 
+// query types handlers functions // 
 #endif //TASK_SCHEDULER_TASK_SCHEDULER_H
