@@ -46,7 +46,7 @@ int main(int argc, char* argv[], char* envp[]) {
                 create_new_task(tasks_list, transfer_object.content, current_pid);
             } else {
                 if (strcmp("", transfer_object.content)) {
-
+                    
                 } else {
                     add_data_to_task(tasks_list, transfer_object.pid, transfer_object.content);
                 }

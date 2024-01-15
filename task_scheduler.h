@@ -92,4 +92,7 @@ task_list_node_t* find_task_by_pid(pid_t pid, tasks_list_t* tasks_list);
 // Adds data field read from queue to task.
 int add_data_to_task(tasks_list_t* tasks_list, pid_t pid, char* data);
 
+// Sets up and runs task.
+int run_task(pid_t pid);
+
 #endif //TASK_SCHEDULER_TASK_SCHEDULER_H
