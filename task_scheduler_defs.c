@@ -184,8 +184,8 @@ static int remove_task_query_handler(tasks_list_t* tasks_list, task_list_node_t*
     data_field_t* data_field = task->task->data_fields;
     unsigned long removed_task_id = 0;
     char read_fields = 0;
-    while (data_field->next_field != NULL) {
-        if (read_fields > 2) {
+    while (data_field != NULL) {
+        if (read_fields >= 2) {
             remove_task_by_id(task->task->id, tasks_list);
             return 1;
         }
