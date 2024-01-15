@@ -43,7 +43,8 @@ int main(int argc, char* argv[], char* envp[]) {
             mq_receive(server_msg_queue, (char*)(&transfer_object), sizeof(transfer_object_t), NULL);
             if (transfer_object.pid != current_pid) {
                 current_pid = transfer_object.pid;
-                create_new_task(tasks_list, transfer_object.content, current_pid);
+                task_t* new_task = create_new_task(transfer_object.content, current_pid);
+                add_task(new_task, tasks_list);
             } else {
                 if (strcmp("", transfer_object.content)) {
                     

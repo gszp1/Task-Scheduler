@@ -97,7 +97,7 @@ int remove_task_by_id(tasks_list_t* tasks_list, unsigned long id) {
 }
 
 // Creates new task.
-int create_new_task(tasks_list_t* tasks_list, char* field, pid_t pid) {
+task_t* create_new_task(char* field, pid_t pid) {
     task_t* new_task = malloc(sizeof(task_t));
     new_task->pid = pid;
     new_task->number_of_fields = 1;
@@ -105,12 +105,14 @@ int create_new_task(tasks_list_t* tasks_list, char* field, pid_t pid) {
     data_field->next_field = NULL;
     strcpy(data_field->data, field);
     new_task->data_fields = data_field;
-    add_task(new_task, tasks_list);
-    return 0;
+    return new_task;
 }
 
 int add_task(task_t* task, tasks_list_t* tasks_list) {
     task_list_node_t* new_node = malloc(sizeof(task_list_node_t));
+    if (new_node == NULL) {
+        return 1;
+    }
     new_node->task = task;
     new_node->next = NULL;
     new_node->prev = tasks_list->tail;
@@ -126,7 +128,7 @@ int add_task(task_t* task, tasks_list_t* tasks_list) {
     return 0;
 }
 
-// Finds task by pid.
+// Finds task by pid. Used inside other thread safe functions, it is by itself not thread safe
 task_list_node_t* find_task_by_pid(pid_t pid, tasks_list_t* tasks_list) {
     if (tasks_list == NULL) {
         return NULL;

@@ -81,7 +81,7 @@ int get_query_type(char* flag);
 int remove_task_by_id(tasks_list_t* tasks_list, unsigned long id);
 
 // Creates new task.
-int create_new_task(tasks_list_t* tasks_list, char* field, pid_t pid);
+task_t* create_new_task(char* field, pid_t pid); 
 
 // Adds task to linked list.
 int add_task(task_t* task, tasks_list_t* tasks_list);
