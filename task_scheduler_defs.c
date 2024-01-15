@@ -249,8 +249,8 @@ static int add_task_query_handler(tasks_list_t* tasks_list, task_list_node_t* ta
     if ((tasks_list == NULL) || (task == NULL)) {
         return 1;
     }
-    
-    
+
+
 }
 
 // Handler for task listing query
