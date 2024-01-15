@@ -186,18 +186,15 @@ static int remove_task_query_handler(tasks_list_t* tasks_list, task_list_node_t*
     char read_fields = 0;
     while (data_field != NULL) {
         if (read_fields >= 2) {
-            remove_task_by_id(tasks_list, task->task->id);
             return 1;
         }
         if (read_fields == 0) {
             if (get_query_type(data_field->data) != REMOVE_TASK) {
-                remove_task_by_id(tasks_list, task->task->id);
                 return 1;
             }
         } else {
             removed_task_id = strtoul(data_field->data, NULL, 10);
             if (removed_task_id == 0) {
-                remove_task_by_id(tasks_list, task->task->id);
                 return 1;
             }
         }
@@ -205,7 +202,6 @@ static int remove_task_query_handler(tasks_list_t* tasks_list, task_list_node_t*
         data_field = data_field->next_field;
     }
     remove_task_by_id(tasks_list, removed_task_id);
-    remove_task_by_id(tasks_list, task->task->id);
     printf("Task removed.\n");
     return 0;
 }
@@ -270,15 +266,12 @@ static int list_tasks_query_handler(tasks_list_t* tasks_list, task_list_node_t* 
     msg_queue_attributes.mq_msgsize = sizeof(client_transfer_object_t);
     mqd_t client_queue = mq_open(queue_name, O_WRONLY, 0666, &msg_queue_attributes);
     if (client_queue == -1) {
-        remove_task_by_id(tasks_list, task->task->id);
         return 1;
     }
     if (send_data_to_client(tasks_list, client_queue) != 0) {
-        remove_task_by_id(tasks_list, task->task->id);
         return 1;
     }
     mq_close(client_queue);
-    remove_task_by_id(tasks_list, task->task->id);
     return 0;
 }
 
@@ -315,6 +308,7 @@ int run_task(tasks_list_t* tasks_list, pid_t pid) {
             pthread_mutex_unlock(&(tasks_list->list_access_mutex));
             return 2;
     }
+    remove_task_by_id(tasks_list, current_node->task->id);
     pthread_mutex_unlock(&(tasks_list->list_access_mutex));
     return 0;
 }
