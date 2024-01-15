@@ -253,7 +253,11 @@ static int add_task_query_handler(tasks_list_t* tasks_list, task_list_node_t* ta
     if (get_query_type(data_field->data) != ADD_TASK) {
         return 1;
     }
-
+    unsigned long read_fields = 0;
+    while(data_field != NULL) {
+        ++read_fields;
+        data_field = data_field->next_field;
+    }
 
 }
 
