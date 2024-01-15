@@ -186,26 +186,27 @@ static int remove_task_query_handler(tasks_list_t* tasks_list, task_list_node_t*
     char read_fields = 0;
     while (data_field != NULL) {
         if (read_fields >= 2) {
-            remove_task_by_id(task->task->id, tasks_list);
+            remove_task_by_id(tasks_list, task->task->id);
             return 1;
         }
         if (read_fields == 0) {
             if (get_query_type(data_field->data) != REMOVE_TASK) {
-                remove_task_by_id(task->task->id, tasks_list);
+                remove_task_by_id(tasks_list, task->task->id);
                 return 1;
             }
         } else {
             removed_task_id = strtoul(data_field->data, NULL, 10);
             if (removed_task_id == 0) {
-                remove_task_by_id(task->task->id, tasks_list);
+                remove_task_by_id(tasks_list, task->task->id);
                 return 1;
             }
         }
         ++read_fields;
         data_field = data_field->next_field;
     }
-    remove_task_by_id(removed_task_id, tasks_list);
-    remove_task_by_id(task->task->id, tasks_list);
+    remove_task_by_id(tasks_list, removed_task_id);
+    remove_task_by_id(tasks_list, task->task->id);
+    printf("Task removed.\n");
     return 0;
 }
 
