@@ -190,7 +190,7 @@ static int remove_task_query_handler(tasks_list_t* tasks_list, task_list_node_t*
             return 1;
         }
         if (read_fields == 0) {
-            if (get_query_type(data_field->data) != 3) {
+            if (get_query_type(data_field->data) != REMOVE_TASK) {
                 remove_task_by_id(task->task->id, tasks_list);
                 return 1;
             }
