@@ -152,6 +152,7 @@ int add_data_to_task(tasks_list_t* tasks_list, pid_t pid, data_field_t* data_fie
     if (tasks_list == NULL) {
         return 1;
     }
+    pthread_mutex_lock(&(tasks_list->list_access_mutex));
     task_list_node_t* node = tasks_list->head;
     while (node != NULL) {
         if (node->task->pid == pid) {
@@ -168,6 +169,7 @@ int add_data_to_task(tasks_list_t* tasks_list, pid_t pid, data_field_t* data_fie
         node->task->data_fields->next_field = data_field;
     }
     node->task->number_of_fields += 1;
+    pthread_mutex_unlock(&(tasks_list->list_access_mutex));
     return 0;
 }
 
