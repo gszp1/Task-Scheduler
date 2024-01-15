@@ -27,6 +27,10 @@ Run command:
 where:  
 -flag ---> -a (add task) , -ls (print all tasks), -rm (remove task)  
 -time_flag ---> -c (cyclic), -b (absolute time), default is relative time in seconds  
+1. Add task command.  
+-  Adds a task to run other program as child process.  
+-  add task structure: ./task_scheduler_out -a <seconds/timestamp> <repeat_time> <program_name> <args>  
+-  relative time is given by seconds, absolute time with timestamp.
 2. List tasks command.  
 -  Lists all tasks held on server.
 -  list all tasks command structure: ./task_scheduler_out -ls
