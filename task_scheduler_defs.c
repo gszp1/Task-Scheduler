@@ -135,14 +135,16 @@ task_t* find_task_by_pid(tasks_list_t* tasks_list, pid_t pid) {
     if (tasks_list == NULL) {
         return NULL;
     }
+    pthread_mutex_lock(&(tasks_list->list_access_mutex));
     task_list_node_t* current_node = tasks_list->head;
     while (current_node != NULL) {
         if (current_node->task->pid == pid) {
-            return current_node->task;
+            break;
         }
         current_node = current_node->next;
     }
-    return NULL;
+    pthread_mutex_unlock(&(tasks_list->list_access_mutex));
+    return current_node;
 }
 
 // Adds data field read from queue to task.
