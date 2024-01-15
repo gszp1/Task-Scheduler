@@ -228,12 +228,24 @@ static int list_tasks_query_handler(tasks_list_t* tasks_list, task_list_node_t* 
     struct mq_attr msg_queue_attributes;
     msg_queue_attributes.mq_maxmsg = MAX_MESSAGES;
     msg_queue_attributes.mq_flags = 0;
-    msg_queue_attributes.mq_msgsize = sizeof(transfer_object_t);
+    msg_queue_attributes.mq_msgsize = 256 * sizeof(char);
     mqd_t client_queue = mq_open(queue_name, O_WRONLY, 0666, &msg_queue_attributes);
     if (client_queue == -1) {
         return 1;
     }
+
     return 0;
+}
+
+static int send_data_to_client(tasks_list_t* tasks_list, mqd_t client_queue) {
+    if (tasks_list == NULL) {
+        return 1;
+    }
+    task_list_node_t* current_node = tasks_list->head;
+    while (current_node != NULL) {
+        
+        current_node = current_node->next;
+    }
 }
 
 // Sets up and runs task.
