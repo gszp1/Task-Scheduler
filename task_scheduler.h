@@ -90,7 +90,7 @@ data_field_t* create_data_field(char* data, pid_t pid);
 int add_task(task_t* task, tasks_list_t* tasks_list);
 
 // Finds task by pid.
-task_list_node_t* find_task_by_pid(tasks_list_t* tasks_list, pid_t pid);
+task_t* find_task_by_pid(tasks_list_t* tasks_list, pid_t pid);
 
 // Adds data field read from queue to task.
 int add_data_to_task(tasks_list_t* tasks_list, pid_t pid, char* data);

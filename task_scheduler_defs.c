@@ -131,14 +131,14 @@ int add_task(task_t* task, tasks_list_t* tasks_list) {
 }
 
 // Finds task by pid.
-task_list_node_t* find_task_by_pid(tasks_list_t* tasks_list, pid_t pid) {
+task_t* find_task_by_pid(tasks_list_t* tasks_list, pid_t pid) {
     if (tasks_list == NULL) {
         return NULL;
     }
     task_list_node_t* current_node = tasks_list->head;
     while (current_node != NULL) {
         if (current_node->task->pid == pid) {
-            return current_node;
+            return current_node->task;
         }
         current_node = current_node->next;
     }
