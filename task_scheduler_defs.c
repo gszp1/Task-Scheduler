@@ -196,11 +196,14 @@ int run_task(tasks_list_t* tasks_list, pid_t pid) {
     }
     data_field_t* data_field = current_node->task->data_fields;
     switch (get_query_type(data_field->data)) {
-        case 1:
+        case ADD_TASK:
+            add_task_query_handler(current_node->task);
             break;
-        case 2:
+        case LIST_TASKS:
+            list_tasks_query_handler(tasks_list, current_node);
             break;
-        case 3:
+        case REMOVE_TASK:
+            remove_task_query_handler(tasks_list, current_node);
             break;
         default:
             pthread_mutex_unlock(&(tasks_list->list_access_mutex));
@@ -208,4 +211,21 @@ int run_task(tasks_list_t* tasks_list, pid_t pid) {
     }
     pthread_mutex_unlock(&(tasks_list->list_access_mutex));
     return 0;
+}
+
+// message handlers //
+
+// Handler for task removal query
+int remove_task_query_handler(tasks_list_t* tasks_list, task_list_node_t* task) {
+
+}
+
+// Handler for task addition query
+int add_task_query_handler(task_t* task) {
+
+}
+
+// Handler for task listing query
+int list_tasks_query_handler(tasks_list_t* tasks_list, task_list_node_t* task) {
+
 }
