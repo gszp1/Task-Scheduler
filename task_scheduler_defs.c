@@ -98,7 +98,7 @@ int add_data_to_task(tasks_list_t* tasks_list, pid_t pid, data_field_t* data_fie
         node = node->next;
     }
     if (node == NULL) {
-        pthread_mutex_unlock(&(tasks_list->list_access_mutex)); 
+        pthread_mutex_unlock(&(tasks_list->list_access_mutex));
         return 1;
     }
     if(node->task->data_fields == NULL) {
@@ -267,15 +267,18 @@ static int list_tasks_query_handler(tasks_list_t* tasks_list, task_list_node_t* 
     struct mq_attr msg_queue_attributes;
     msg_queue_attributes.mq_maxmsg = MAX_MESSAGES;
     msg_queue_attributes.mq_flags = 0;
-    msg_queue_attributes.mq_msgsize = 256 * sizeof(char);
+    msg_queue_attributes.mq_msgsize = sizeof(client_transfer_object_t);
     mqd_t client_queue = mq_open(queue_name, O_WRONLY, 0666, &msg_queue_attributes);
     if (client_queue == -1) {
+        remove_task_by_id(tasks_list, task->task->id);
         return 1;
     }
     if (send_data_to_client(tasks_list, client_queue) != 0) {
+        remove_task_by_id(tasks_list, task->task->id);
         return 1;
     }
     mq_close(client_queue);
+    remove_task_by_id(tasks_list, task->task->id);
     return 0;
 }
 
