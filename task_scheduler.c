@@ -14,10 +14,27 @@ int main(int argc, char* argv[], char* envp[]) {
     if ((server_msg_queue == -1) && (errno == EEXIST)) {
         printf("Running process as client.\n");
 
-        server_msg_queue  = mq_open(SERVER_QUEUE_NAME, O_WRONLY, 0666, &server_msg_queue_attributes);
+        server_msg_queue = mq_open(SERVER_QUEUE_NAME, O_WRONLY, 0666, &server_msg_queue_attributes);
         if (server_msg_queue == -1) {
             printf("Failed to connect with server queue.\n");
             return 1;
+        }
+
+        // if user entered command for displaying list of tasks
+        int is_list_tasks_query = (get_query_type(argv[1]) == LIST_TASKS) && (argc <= 2);
+        if (is_list_tasks_query) {
+            char user_queue_name[32];
+            sprintf(user_queue_name, "%s%d", USER_QUEUE_NAME, getpid());
+            struct mq_attr client_queue_attributes;
+            client_queue_attributes.mq_maxmsg = 10;
+            client_queue_attributes.mq_flags = 0;
+            client_queue_attributes.mq_msgsize = 256 * sizeof(char);
+            mqd_t user_queue = mq_open(user_queue_name, O_CREAT | O_EXCL | O_RDONLY, 0666,  &client_queue_attributes);
+            if (user_queue == -1) {
+                mq_close(server_msg_queue);
+                printf("Failed to open client queue.\n");
+                return 1;
+            }
         }
 
         if (queue_send_arguments(argc, argv, server_msg_queue)) {
