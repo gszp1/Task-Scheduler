@@ -17,8 +17,14 @@ zakończenie pracy programu powinno być równoznaczne z anulowaniem wszystkich 
 aplikacja powinna być zgodna ze standardami POSIX i języka C.
 
 Program commands are inserted through command line.  
+Inserting more flags than required or not providing all required ones, will cause the scheduler to ignore given task, even if it is partially correct.  
+Provide all required arguments, no more, no less.
 Run command:  
 ./task_scheduler -flag -time_flag <time> <path> <args>  
 where:  
 -flag ---> -a (add task) , -ls (print all tasks), -rm (remove task)  
 -time_flag ---> -c (cyclic), -b (absolute time), default is relative time in seconds  
+3. Remove task command.  
+  remove task structure: ./task_scheduler -rm <task_id>  
+  correct command example: ./task_scheduler -rm 2137  
+  wrong command example: ./task_scheduler -rm 214454 12232 hello
