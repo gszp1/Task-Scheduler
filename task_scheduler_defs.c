@@ -212,6 +212,16 @@ static int send_data_to_client(tasks_list_t* tasks_list, mqd_t client_queue) {
     return 0;
 }
 
+// Converts time in form of string (seconds or timestamp) to seconds.
+static unsigned long get_time(char* time_string, int* time_type) {
+    //timestamp: YYYY-MM-DDThh:mm:ss
+    if (strlen(time_string) == 19) {
+
+    }
+}
+
+
+
 // message handlers //
 
 // Handler for task removal query
@@ -254,6 +264,7 @@ static int add_task_query_handler(tasks_list_t* tasks_list, task_list_node_t* ta
         return 1;
     }
     unsigned long read_fields = 0;
+    int time_type = 0; //relative / absoulute
     while(data_field != NULL) {
         switch (read_fields) {
             case 0:
@@ -262,6 +273,7 @@ static int add_task_query_handler(tasks_list_t* tasks_list, task_list_node_t* ta
                 }
                 break;
             case 1:
+
                 break;
             case 2:
                 break;
@@ -337,4 +349,42 @@ int run_task(tasks_list_t* tasks_list, pid_t pid) {
     }
     pthread_mutex_unlock(&(tasks_list->list_access_mutex));
     return 0;
+}
+
+// misc functions //
+
+// Checks if date stored in string is ISO 8601 compliant. YYYY-MM-DDThh:mm:ss
+int is_iso8601_date(char* string) {
+    if (strlen(string != 19)) {
+        return 0;
+    }
+    int counter = 0;
+    while (*(string + counter) != '\0') {
+        switch(counter){
+            case 4:
+            case 7:
+                if (*(string + counter) != '-') {
+                    return 0;
+                }
+                break;
+            case 10:
+                if (*(string + counter) != 'T') {
+                    return 0;
+                }
+                break;
+            case 13:
+            case 16:
+                if (*(string + counter) != ':') {
+                    return 0;
+                }
+                break;            
+            default:
+                if ((*(string + counter) < '0') || (*(string + counter) > '9')) {
+                    return 0;
+                }
+                break;
+        }
+        ++counter;
+    }
+    return 1;
 }
