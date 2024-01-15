@@ -115,6 +115,7 @@ int add_task(task_t* task, tasks_list_t* tasks_list) {
     }
     new_node->task = task;
     new_node->next = NULL;
+    pthread_mutex_lock(&(tasks_list->list_access_mutex));
     new_node->prev = tasks_list->tail;
     if (tasks_list->tail != NULL) {
         tasks_list->tail->next = new_node;
@@ -125,6 +126,7 @@ int add_task(task_t* task, tasks_list_t* tasks_list) {
     }
     (tasks_list->max_id)++;
     task->id = tasks_list->max_id;
+    pthread_mutex_lock(&(tasks_list->list_access_mutex));
     return 0;
 }
 
