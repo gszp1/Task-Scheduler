@@ -171,6 +171,7 @@ data_field_t* create_data_field(char* data, pid_t pid) {
 }
 
 // Sets up and runs task.
-int run_task(pid_t pid) {
+int run_task(tasks_list_t* tasks_list, pid_t pid) {
     printf("Starting new task.");
+    
 }
