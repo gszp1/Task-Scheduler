@@ -97,5 +97,15 @@ task_t* create_new_task(char* field, pid_t pid);
 // Creates new data field.
 data_field_t* create_data_field(char* data, pid_t pid);
 
-// query types handlers functions // 
+// query types handlers functions //
+
+// Handler for task removal query
+int remove_task_query_handler(tasks_list_t* tasks_list, task_list_node_t* task);
+
+// Handler for task addition query
+int add_task_query_handler(task_t* task);
+
+// Handler for task listing query
+int list_tasks_query_handler(tasks_list_t* tasks_list, task_list_node_t* task);
+
 #endif //TASK_SCHEDULER_TASK_SCHEDULER_H
