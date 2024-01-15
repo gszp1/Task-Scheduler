@@ -132,6 +132,7 @@ int add_data_to_task(tasks_list_t* tasks_list, pid_t pid, data_field_t* data_fie
         node = node->next;
     }
     if (node == NULL) {
+        pthread_mutex_unlock(&(tasks_list->list_access_mutex)); 
         return 1;
     }
     if(node->task->data_fields == NULL) {
@@ -170,7 +171,7 @@ data_field_t* create_data_field(char* data, pid_t pid) {
         return NULL;
     }
     new_data_field->next_field = NULL;
-    strcmp(new_data_field->data, data);
+    strcpy(new_data_field->data, data);
     return new_data_field;
 }
 
