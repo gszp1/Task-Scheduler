@@ -21,7 +21,10 @@ int main(int argc, char* argv[], char* envp[]) {
         }
 
         // if user entered command for displaying list of tasks
-        int is_list_tasks_query = (get_query_type(argv[1]) == LIST_TASKS) && (argc <= 2);
+        int is_list_tasks_query = 0;
+        if (argc > 1) {
+            int is_list_tasks_query = (get_query_type(argv[1]) == LIST_TASKS) && (argc <= 2);
+        }
         mqd_t user_queue;
         char user_queue_name[32];
 
@@ -50,6 +53,7 @@ int main(int argc, char* argv[], char* envp[]) {
         }
         
         if (is_list_tasks_query) {
+
             mq_close(user_queue);
             mq_unlink(user_queue_name);
         }

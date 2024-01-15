@@ -218,6 +218,45 @@ static int add_task_query_handler(tasks_list_t* tasks_list, task_list_node_t* ta
     
 }
 
+
+static int send_data_to_client(tasks_list_t* tasks_list, mqd_t client_queue) {
+    if (tasks_list == NULL) {
+        return 1;
+    }
+    client_transfer_object_t transfer_object;
+    task_list_node_t* current_node = tasks_list->head;
+    while (current_node != NULL) {
+        data_field_t* data_field = current_node->task->data_fields;
+        if (data_field == NULL) {
+            transfer_object.last_record_entry = 1;
+        } else {
+            transfer_object.last_record_entry = 0;
+        }
+        sprintf(transfer_object.content, "%lu", current_node->task->id);
+        if (mq_send(client_queue, (char*)(&transfer_object), sizeof(client_transfer_object_t), 0) == -1) {
+            return 1;
+        }
+        while (data_field != NULL) {
+            strcpy(transfer_object.content,  data_field->data);
+            if (data_field->next_field == NULL) {
+                transfer_object.last_record_entry = 1;
+            } else {
+                transfer_object.last_record_entry = 0;
+            }
+            if (mq_send(client_queue, (char*)(&transfer_object), sizeof(client_transfer_object_t), 0) == -1) {
+                return 1;
+            }
+            data_field = data_field->next_field;
+        }
+        current_node = current_node->next;
+    }
+    transfer_object.content[0] = '\0';
+    if (mq_send(client_queue, (char*)(&transfer_object), sizeof(client_transfer_object_t), 0) == -1) {
+        return 1;
+    }
+    return 0;
+}
+
 // Handler for task listing query
 static int list_tasks_query_handler(tasks_list_t* tasks_list, task_list_node_t* task) {
     if ((tasks_list == NULL) || (task == NULL)) {
@@ -237,44 +276,6 @@ static int list_tasks_query_handler(tasks_list_t* tasks_list, task_list_node_t* 
         return 1;
     }
     mq_close(client_queue);
-    return 0;
-}
-
-static int send_data_to_client(tasks_list_t* tasks_list, mqd_t client_queue) {
-    if (tasks_list == NULL) {
-        return 1;
-    }
-    client_transfer_object_t transfer_object;
-    task_list_node_t* current_node = tasks_list->head;
-    while (current_node != NULL) {
-        data_field_t* data_field = current_node->task->data_fields;
-        if (data_field == NULL) {
-            transfer_object.last_record_entry = 1;
-        } else {
-            transfer_object.last_record_entry = 0;
-        }
-        sprintf(transfer_object.content, "%d", current_node->task->id);
-        if (mq_send(client_queue, &transfer_object, sizeof(client_transfer_object_t), 0) == -1) {
-            return 1;
-        }
-        while (data_field != NULL) {
-            strcpy(transfer_object.content,  data_field->data);
-            if (data_field->next_field == NULL) {
-                transfer_object.last_record_entry = 1;
-            } else {
-                transfer_object.last_record_entry = 0;
-            }
-            if (mq_send(client_queue, &transfer_object, sizeof(client_transfer_object_t), 0) == -1) {
-                return 1;
-            }
-            data_field = data_field->next_field;
-        }
-        current_node = current_node->next;
-    }
-    transfer_object.content[0] = '\0';
-    if (mq_send(client_queue, &transfer_object, sizeof(client_transfer_object_t), 0) == -1) {
-        return 1;
-    }
     return 0;
 }
 
