@@ -212,12 +212,14 @@ static int remove_task_query_handler(tasks_list_t* tasks_list, task_list_node_t*
 
 // Handler for task addition query
 static int add_task_query_handler(tasks_list_t* tasks_list, task_list_node_t* task) {
-
+    if ((tasks_list == NULL) || (task == NULL)) {
+        return 1;
+    }
+    
 }
 
 // Handler for task listing query
 static int list_tasks_query_handler(tasks_list_t* tasks_list, task_list_node_t* task) {
-
 }
 
 // Sets up and runs task.
