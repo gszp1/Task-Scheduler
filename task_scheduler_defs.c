@@ -126,7 +126,7 @@ int add_task(task_t* task, tasks_list_t* tasks_list) {
     }
     (tasks_list->max_id)++;
     task->id = tasks_list->max_id;
-    pthread_mutex_lock(&(tasks_list->list_access_mutex));
+    pthread_mutex_unlock(&(tasks_list->list_access_mutex));
     return 0;
 }
 
