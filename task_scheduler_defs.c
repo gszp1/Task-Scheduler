@@ -96,18 +96,6 @@ int remove_task_by_id(tasks_list_t* tasks_list, unsigned long id) {
     return 0;
 }
 
-// Creates new task.
-task_t* create_new_task(char* field, pid_t pid) {
-    task_t* new_task = malloc(sizeof(task_t));
-    new_task->pid = pid;
-    new_task->number_of_fields = 1;
-    data_field_t* data_field = malloc(sizeof(data_field_t));
-    data_field->next_field = NULL;
-    strcpy(data_field->data, field);
-    new_task->data_fields = data_field;
-    return new_task;
-}
-
 int add_task(task_t* task, tasks_list_t* tasks_list) {
     task_list_node_t* new_node = malloc(sizeof(task_list_node_t));
     if (new_node == NULL) {
@@ -156,6 +144,17 @@ int add_data_to_task(tasks_list_t* tasks_list, pid_t pid, data_field_t* data_fie
     return 0;
 }
 
+// Creates new task.
+task_t* create_new_task(char* field, pid_t pid) {
+    task_t* new_task = malloc(sizeof(task_t));
+    new_task->pid = pid;
+    new_task->number_of_fields = 1;
+    data_field_t* data_field = malloc(sizeof(data_field_t));
+    data_field->next_field = NULL;
+    strcpy(data_field->data, field);
+    new_task->data_fields = data_field;
+    return new_task;
+}
 
 // Creates new data field.
 data_field_t* create_data_field(char* data, pid_t pid) {

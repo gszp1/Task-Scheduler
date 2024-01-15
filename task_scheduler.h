@@ -80,12 +80,6 @@ int get_query_type(char* flag);
 // Removes task with given ID.
 int remove_task_by_id(tasks_list_t* tasks_list, unsigned long id);
 
-// Creates new task.
-task_t* create_new_task(char* field, pid_t pid); 
-
-// Creates new data field.
-data_field_t* create_data_field(char* data, pid_t pid);
-
 // Adds task to linked list.
 int add_task(task_t* task, tasks_list_t* tasks_list);
 
@@ -94,5 +88,11 @@ int add_data_to_task(tasks_list_t* tasks_list, pid_t pid, data_field_t* data_fie
 
 // Sets up and runs task.
 int run_task(pid_t pid); // todo
+
+// Creates new task.
+task_t* create_new_task(char* field, pid_t pid); 
+
+// Creates new data field.
+data_field_t* create_data_field(char* data, pid_t pid);
 
 #endif //TASK_SCHEDULER_TASK_SCHEDULER_H
