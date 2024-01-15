@@ -148,7 +148,7 @@ task_t* find_task_by_pid(tasks_list_t* tasks_list, pid_t pid) {
 }
 
 // Adds data field read from queue to task.
-int add_data_to_task(tasks_list_t* tasks_list, pid_t pid, char* data) {
+int add_data_to_task(tasks_list_t* tasks_list, pid_t pid, data_field_t* data_field) {
     if (tasks_list == NULL) {
         return 1;
     }
@@ -162,12 +162,6 @@ int add_data_to_task(tasks_list_t* tasks_list, pid_t pid, char* data) {
     if (node == NULL) {
         return 1;
     }
-    data_field_t* data_field = malloc(sizeof(data_field_t));
-    if (data_field == NULL) {
-        return 3;
-    }
-    data_field->next_field = NULL;
-    strcpy(data_field->data, data);
     if(node->task->data_fields == NULL) {
         node->task->data_fields = data_field;
     } else {

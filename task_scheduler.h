@@ -93,7 +93,7 @@ int add_task(task_t* task, tasks_list_t* tasks_list);
 task_t* find_task_by_pid(tasks_list_t* tasks_list, pid_t pid);
 
 // Adds data field read from queue to task.
-int add_data_to_task(tasks_list_t* tasks_list, pid_t pid, char* data);
+int add_data_to_task(tasks_list_t* tasks_list, pid_t pid, data_field_t* data_field);
 
 // Sets up and runs task.
 int run_task(pid_t pid); // todo
