@@ -49,13 +49,13 @@ int queue_send_arguments(int argc, char* argv[], mqd_t message_queue) {
 
 // Checks if given string is a flag.
 int get_query_type(char* flag) {
-    if (strcmp(flag, "-a")) {
+    if (strcmp(flag, "-a") == 0) {
         return ADD_TASK;
     }
-    if (strcmp(flag, "-rm")) {
+    if (strcmp(flag, "-rm") == 0) {
         return REMOVE_TASK;
     }
-    if (strcmp(flag, "-ls")) {
+    if (strcmp(flag, "-ls") == 0) {
         return LIST_TASKS;
     }
     return 0;
