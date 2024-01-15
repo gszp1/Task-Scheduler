@@ -100,4 +100,9 @@ task_t* create_new_task(char* field, pid_t pid);
 // Creates new data field.
 data_field_t* create_data_field(char* data, pid_t pid);
 
+// misc functions //
+
+// Checks if date stored in string is ISO 8601 compliant. YYYY-MM-DDThh:mm:ss
+int is_iso8601_date(char* string);
+
 #endif //TASK_SCHEDULER_TASK_SCHEDULER_H
