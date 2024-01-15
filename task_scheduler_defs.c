@@ -249,6 +249,10 @@ static int add_task_query_handler(tasks_list_t* tasks_list, task_list_node_t* ta
     if ((tasks_list == NULL) || (task == NULL)) {
         return 1;
     }
+    data_field_t* data_field = task->task->data_fields;
+    if (get_query_type(data_field->data) != ADD_TASK) {
+        return 1;
+    }
 
 
 }
