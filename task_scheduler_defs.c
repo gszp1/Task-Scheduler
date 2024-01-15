@@ -173,5 +173,10 @@ data_field_t* create_data_field(char* data, pid_t pid) {
 // Sets up and runs task.
 int run_task(tasks_list_t* tasks_list, pid_t pid) {
     printf("Starting new task.");
-    
+    if (tasks_list == NULL) {
+        return 1;
+    }
+    pthread_mutex_lock(&(tasks_list->list_access_mutex));
+    pthread_mutex_unlock(&(tasks_list->list_access_mutex));
+    return 0;
 }
