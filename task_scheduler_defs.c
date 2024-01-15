@@ -211,6 +211,7 @@ static int add_task_query_handler(tasks_list_t* tasks_list, task_list_node_t* ta
     if ((tasks_list == NULL) || (task == NULL)) {
         return 1;
     }
+
     
 }
 
@@ -296,6 +297,9 @@ int run_task(tasks_list_t* tasks_list, pid_t pid) {
     data_field_t* data_field = current_node->task->data_fields;
     switch (get_query_type(data_field->data)) {
         case ADD_TASK:
+            if (add_task_query_handler(tasks_list, current_node) != 0) {
+                remove_task_by_id(tasks_list, current_node->task->id);
+            }
             add_task_query_handler(tasks_list, current_node);
             break;
         case LIST_TASKS:
