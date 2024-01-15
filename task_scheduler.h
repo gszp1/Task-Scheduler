@@ -77,9 +77,6 @@ int queue_send_arguments(int argc, char* argv[], mqd_t message_queue);
 // Checks if given string is a flag.
 int get_query_type(char* flag);
 
-// Removes task with given ID.
-int remove_task_by_id(tasks_list_t* tasks_list, unsigned long id);
-
 // Adds task to linked list.
 int add_task(task_t* task, tasks_list_t* tasks_list);
 
