@@ -33,7 +33,7 @@ int main(int argc, char* argv[], char* envp[]) {
             struct mq_attr client_queue_attributes;
             client_queue_attributes.mq_maxmsg = 10;
             client_queue_attributes.mq_flags = 0;
-            client_queue_attributes.mq_msgsize = 256 * sizeof(char);
+            client_queue_attributes.mq_msgsize = sizeof(client_transfer_object_t);
             user_queue = mq_open(user_queue_name, O_CREAT | O_EXCL | O_RDONLY, 0666,  &client_queue_attributes);
             if (user_queue == -1) {
                 mq_close(server_msg_queue);
@@ -51,9 +51,24 @@ int main(int argc, char* argv[], char* envp[]) {
             }
             return 2;
         }
-        
-        if (is_list_tasks_query) {
 
+        if (is_list_tasks_query) {
+            char reading_finished = 0;
+            while (reading_finished == 0) {
+                client_transfer_object_t transfer_object;
+                mq_receive(user_queue, (char*)(&transfer_object), sizeof(client_transfer_object_t), 0);
+                if (transfer_object.last_record_entry == 1) {
+                    printf("\n");
+                    reading_finished = 1;
+                    continue;
+                }
+                printf("%s", transfer_object.content);
+                if(transfer_object.last_record_entry == 1) {
+                    printf("\n");
+                } else {
+                    printf(" | ");
+                }
+            }
             mq_close(user_queue);
             mq_unlink(user_queue_name);
         }
