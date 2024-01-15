@@ -61,41 +61,6 @@ int get_query_type(char* flag) {
     return 0;
 }
 
-// Removes task with given ID.
-int remove_task_by_id(tasks_list_t* tasks_list, unsigned long id) {
-    if (tasks_list == NULL) {
-        return 1;
-    }
-    pthread_mutex_lock(&(tasks_list->list_access_mutex));
-    task_list_node_t* current_node = tasks_list->head;
-    while(current_node != NULL) {
-        if (current_node->task->id == id) {
-            // todo: stop and remove clock
-            if ((current_node == tasks_list->tail) && (current_node == tasks_list->head)) {
-                tasks_list->tail = NULL;
-                tasks_list->head = NULL;
-            } else {
-                if (current_node->prev != NULL) {
-                    current_node->prev->next = current_node->next;
-                } else {
-                    tasks_list->head = current_node->next;
-                }
-
-                if (current_node->next != NULL) {
-                    current_node->next->prev = current_node->prev;
-                } else {
-                    tasks_list->tail = current_node->prev;
-                }
-            }
-            free(current_node);
-            break;
-        }
-        current_node = current_node->next;
-    }
-    pthread_mutex_unlock(&(tasks_list->list_access_mutex));
-    return 0;
-}
-
 // Adds task to tasks list.
 int add_task(task_t* task, tasks_list_t* tasks_list) {
     task_list_node_t* new_node = malloc(sizeof(task_list_node_t));
@@ -176,11 +141,72 @@ data_field_t* create_data_field(char* data, pid_t pid) {
     return new_data_field;
 }
 
+// Removes task with given ID.
+static int remove_task_by_id(tasks_list_t* tasks_list, unsigned long id) {
+    if (tasks_list == NULL) {
+        return 1;
+    }
+    task_list_node_t* current_node = tasks_list->head;
+    while(current_node != NULL) {
+        if (current_node->task->id == id) {
+            // todo: stop and remove clock
+            if ((current_node == tasks_list->tail) && (current_node == tasks_list->head)) {
+                tasks_list->tail = NULL;
+                tasks_list->head = NULL;
+            } else {
+                if (current_node->prev != NULL) {
+                    current_node->prev->next = current_node->next;
+                } else {
+                    tasks_list->head = current_node->next;
+                }
+
+                if (current_node->next != NULL) {
+                    current_node->next->prev = current_node->prev;
+                } else {
+                    tasks_list->tail = current_node->prev;
+                }
+            }
+            free(current_node);
+            break;
+        }
+        current_node = current_node->next;
+    }
+    return 0;
+}
+
 // message handlers //
 
 // Handler for task removal query
 static int remove_task_query_handler(tasks_list_t* tasks_list, task_list_node_t* task) {
-
+    if ((tasks_list == NULL) || (task == NULL)) {
+        return 1;
+    }
+    data_field_t* data_field = task->task->data_fields;
+    unsigned long removed_task_id = 0;
+    char read_fields = 0;
+    while (data_field->next_field != NULL) {
+        if (read_fields > 2) {
+            remove_task_by_id(task->task->id, tasks_list);
+            return 1;
+        }
+        if (read_fields == 0) {
+            if (get_query_type(data_field->data) != 3) {
+                remove_task_by_id(task->task->id, tasks_list);
+                return 1;
+            }
+        } else {
+            removed_task_id = strtoul(data_field->data, NULL, 10);
+            if (removed_task_id == 0) {
+                remove_task_by_id(task->task->id, tasks_list);
+                return 1;
+            }
+        }
+        ++read_fields;
+        data_field = data_field->next_field;
+    }
+    remove_task_by_id(removed_task_id, tasks_list);
+    remove_task_by_id(task->task->id, tasks_list);
+    return 0;
 }
 
 // Handler for task addition query
