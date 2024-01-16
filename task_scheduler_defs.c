@@ -40,13 +40,13 @@ void tasks_list_destroy(tasks_list_t* tasks_list) {
 void destroy_task(task_t* task) {
     data_field_t* data_field = task->data_fields;
     data_field_t* next_field = NULL;
+    if (task->task_status == ACTIVE) {
+        timer_delete(task->timer);
+    }
     while (data_field != NULL) {
         next_field = data_field->next_field;
         free(data_field);
         data_field = next_field;
-    }
-    if (task->task_status == ACTIVE) {
-        timer_delete(task->timer);
     }
     free(task);
 }
