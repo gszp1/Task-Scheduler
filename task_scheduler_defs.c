@@ -218,7 +218,7 @@ void* timer_thread_task(void* arg) {
     timer_function_data_t* data = (timer_function_data_t*)arg;
     pthread_mutex_lock(&(data->tasks_list->list_access_mutex));
     pid_t child_pid;
-    char** file_name = NULL;
+    char file_name[256];
     data_field_t* data_field = data->task->task->data_fields;
     unsigned long read_fields = 0;
     unsigned long number_of_arguments = 0;
@@ -230,7 +230,7 @@ void* timer_thread_task(void* arg) {
     }
     while(data_field != NULL) {
         if (read_fields == 3) {
-            file_name = &(data_field->data);
+            strcpy(file_name, data_field->data);
         } else if (read_fields > 3) {
             *(arguments + number_of_arguments) = data_field->data;
             ++number_of_arguments;
@@ -247,7 +247,7 @@ void* timer_thread_task(void* arg) {
         ++read_fields;
         data_field = data_field->next_field;
     }
-    if (posix_spawnp(&child_pid, *file_name, NULL, NULL, arguments, *(data->envp)) == 0) {
+    if (posix_spawnp(&child_pid, file_name, NULL, NULL, arguments, *(data->envp)) == 0) {
         free(arguments);
         remove_task_by_id(data->tasks_list, data->task->task->id);
         pthread_mutex_unlock(&(data->tasks_list->list_access_mutex));
