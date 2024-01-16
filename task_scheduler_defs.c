@@ -276,8 +276,6 @@ static int add_task_query_handler(tasks_list_t* tasks_list, task_list_node_t* ta
                     return 1;
                 }
                 break;
-            case 3:
-                break;
         }
         ++read_fields;
         data_field = data_field->next_field;
