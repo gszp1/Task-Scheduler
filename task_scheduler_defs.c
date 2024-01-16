@@ -215,12 +215,45 @@ static int send_data_to_client(tasks_list_t* tasks_list, mqd_t client_queue) {
 
 void* timer_thread_task(void* arg) {
     timer_function_data_t* data = (timer_function_data_t*)arg;
-    // pthread_mutex_lock(&(data->tasks_list->list_access_mutex));
-    
-    // posix_spawnp(, , NULL, NULL, )
-
-
-    // pthread_mutex_unlock(&(data->tasks_list->list_access_mutex));
+    pthread_mutex_lock(&(data->tasks_list->list_access_mutex));
+    pid_t child_pid;
+    char** file_name = NULL;
+    data_field_t* data_field = data->task->task->data_fields;
+    unsigned long read_fields = 0;
+    unsigned long number_of_arguments = 0;
+    char** arguments = malloc(sizeof(char*));
+    if (arguments == NULL) {
+        remove_task_by_id(data->tasks_list, data->task->task->id);
+        pthread_mutex_unlock(&(data->tasks_list->list_access_mutex));
+        return NULL;
+    }
+    while(data_field != NULL) {
+        if (read_fields == 3) {
+            file_name = &(data_field->data);
+        } else if (read_fields > 3) {
+            *(arguments + number_of_arguments) = data_field->data;
+            ++number_of_arguments;
+            char** safe_ptr = realloc(arguments, (number_of_arguments + 1) * sizeof(char*));
+            if (arguments == NULL) {
+                free(safe_ptr);
+                free(arguments);
+                remove_task_by_id(data->tasks_list, data->task->task->id);
+                pthread_mutex_unlock(&(data->tasks_list->list_access_mutex));
+                return NULL;
+            }
+            arguments = safe_ptr;
+        }
+        ++read_fields;
+        data_field = data_field->next_field;
+    }
+    if (posix_spawnp(&child_pid, *file_name, NULL, NULL, arguments, *(data->envp)) == 0) {
+        free(arguments);
+        remove_task_by_id(data->tasks_list, data->task->task->id);
+        pthread_mutex_unlock(&(data->tasks_list->list_access_mutex));
+        return NULL;   
+    }
+    free(arguments);
+    pthread_mutex_unlock(&(data->tasks_list->list_access_mutex));
 
     return NULL;
 }
