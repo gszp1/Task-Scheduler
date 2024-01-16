@@ -354,7 +354,7 @@ int run_task(tasks_list_t* tasks_list, pid_t pid) {
 
 // Checks if date stored in string is ISO 8601 compliant. YYYY-MM-DDThh:mm:ss
 int is_iso8601_date(char* string) {
-    if (strlen(string != 19)) {
+    if (strlen(string) != 19) {
         return 0;
     }
     int counter = 0;
