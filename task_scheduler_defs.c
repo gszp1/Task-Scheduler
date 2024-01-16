@@ -164,6 +164,22 @@ int add_task(task_t* task, tasks_list_t* tasks_list) {
     return 0;
 }
 
+// Removes task with given ID.
+static int remove_task_by_id(tasks_list_t* tasks_list, unsigned long id) {
+    if (tasks_list == NULL) {
+        return 1;
+    }
+    task_list_node_t* current_node = tasks_list->head;
+    while(current_node != NULL) {
+        if (current_node->task->id == id) {
+            destroy_node(tasks_list, current_node);
+            break;
+        }
+        current_node = current_node->next;
+    }
+    return 0;
+}
+
 ///////////////////////////////
 // task processing functions //
 //////////////////////////////
@@ -185,22 +201,6 @@ int queue_send_arguments(int argc, char* argv[], mqd_t message_queue) {
     }
     transfer_object.content[0] = '\0';
     return mq_send(message_queue, (char*)(&transfer_object), sizeof(transfer_object_t), 0);
-}
-
-// Removes task with given ID.
-static int remove_task_by_id(tasks_list_t* tasks_list, unsigned long id) {
-    if (tasks_list == NULL) {
-        return 1;
-    }
-    task_list_node_t* current_node = tasks_list->head;
-    while(current_node != NULL) {
-        if (current_node->task->id == id) {
-            destroy_node(tasks_list, current_node);
-            break;
-        }
-        current_node = current_node->next;
-    }
-    return 0;
 }
 
 // Function for sending data to client through queue.
