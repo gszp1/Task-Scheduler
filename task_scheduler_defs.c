@@ -283,6 +283,11 @@ static int add_task_query_handler(tasks_list_t* tasks_list, task_list_node_t* ta
     if (read_fields < 4) {
         return 1;
     }
+    struct itimerspec tispec;
+    tispec.it_value.tv_sec = time;
+    tispec.it_value.tv_nsec = 0;
+    tispec.it_interval.tv_sec = repeat_time;
+    tispec.it_interval.tv_nsec = 0;
 
 }
 
