@@ -256,6 +256,7 @@ static int add_task_query_handler(tasks_list_t* tasks_list, task_list_node_t* ta
     unsigned long read_fields = 0;
     int time_type = 0; //relative / absoulute
     time_t time = 0;
+    time_t repeat_time = 0;
     while(data_field != NULL) {
         switch (read_fields) {
             case 0:
@@ -270,6 +271,10 @@ static int add_task_query_handler(tasks_list_t* tasks_list, task_list_node_t* ta
                 }
                 break;
             case 2:
+                repeat_time = convert_string_to_seconds(data_field->data);
+                if (repeat_time == -1) {
+                    return 1;
+                }
                 break;
             case 3:
                 break;
