@@ -187,20 +187,6 @@ int queue_send_arguments(int argc, char* argv[], mqd_t message_queue) {
     return mq_send(message_queue, (char*)(&transfer_object), sizeof(transfer_object_t), 0);
 }
 
-// Checks if given string is a flag.
-int get_query_type(char* flag) {
-    if (strcmp(flag, "-a") == 0) {
-        return ADD_TASK;
-    }
-    if (strcmp(flag, "-rm") == 0) {
-        return REMOVE_TASK;
-    }
-    if (strcmp(flag, "-ls") == 0) {
-        return LIST_TASKS;
-    }
-    return 0;
-}
-
 // Removes task with given ID.
 static int remove_task_by_id(tasks_list_t* tasks_list, unsigned long id) {
     if (tasks_list == NULL) {
@@ -508,6 +494,19 @@ int run_task(tasks_list_t* tasks_list, pid_t pid, char*** envp) {
 // misc functions //
 ///////////////////
 
+// Checks if given string is a flag.
+int get_query_type(char* flag) {
+    if (strcmp(flag, "-a") == 0) {
+        return ADD_TASK;
+    }
+    if (strcmp(flag, "-rm") == 0) {
+        return REMOVE_TASK;
+    }
+    if (strcmp(flag, "-ls") == 0) {
+        return LIST_TASKS;
+    }
+    return 0;
+}
 
 // Checks if date stored in string is ISO 8601 compliant. YYYY-MM-DDThh:mm:ss
 int is_iso8601_date(char* string) {
