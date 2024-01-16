@@ -24,7 +24,11 @@
 #include <signal.h>
 #include <spawn.h>
 
+
+/////////////////
 // data types  //
+////////////////
+
 
 // Enumerate for types of queries.
 typedef enum {
@@ -89,13 +93,17 @@ typedef struct timer_function_data {
     task_list_node_t* task;
     char*** envp;
 } timer_function_data_t;
+
 // functions declarations //
+
+
+////////////////////////////////////////
+// linked list manipulation functions //
+///////////////////////////////////////
+
 
 // Initialize tasks linked list.
 int task_list_init(tasks_list_t** tasks_list);
-
-// Destroy tasks linked list.
-void tasks_list_destroy(tasks_list_t* tasks_list);
 
 // Destroys task.
 void destroy_task(task_t* task);
@@ -103,22 +111,8 @@ void destroy_task(task_t* task);
 // removes node from tasks list and frees resources.
 void destroy_node(tasks_list_t* tasks_list, task_list_node_t* node);
 
-// Send program arguments to server.
-int queue_send_arguments(int argc, char* argv[], mqd_t message_queue);
-
-// Checks if given string is a flag.
-int get_query_type(char* flag);
-
-// Adds task to linked list.
-int add_task(task_t* task, tasks_list_t* tasks_list);
-
-// Adds data field read from queue to task.
-int add_data_to_task(tasks_list_t* tasks_list, pid_t pid, data_field_t* data_field);
-
-// Sets up and runs task.
-int run_task(tasks_list_t* tasks_list, pid_t pid, char*** envp);
-
-// fabrication functions //
+// Destroy tasks linked list.
+void tasks_list_destroy(tasks_list_t* tasks_list);
 
 // Creates new task.
 task_t* create_new_task(char* field, pid_t pid); 
@@ -126,7 +120,31 @@ task_t* create_new_task(char* field, pid_t pid);
 // Creates new data field.
 data_field_t* create_data_field(char* data, pid_t pid);
 
+// Adds data field read from queue to task.
+int add_data_to_task(tasks_list_t* tasks_list, pid_t pid, data_field_t* data_field);
+
+// Adds task to linked list.
+int add_task(task_t* task, tasks_list_t* tasks_list);
+
+
+///////////////////////////////
+// task processing functions //
+//////////////////////////////
+
+
+// Send program arguments to server.
+int queue_send_arguments(int argc, char* argv[], mqd_t message_queue);
+
+// Sets up and runs task.
+int run_task(tasks_list_t* tasks_list, pid_t pid, char*** envp);
+
+
+////////////////////
 // misc functions //
+///////////////////
+
+// Checks if given string is a flag.
+int get_query_type(char* flag);
 
 // Checks if date stored in string is ISO 8601 compliant. YYYY-MM-DDThh:mm:ss
 int is_iso8601_date(char* string);
