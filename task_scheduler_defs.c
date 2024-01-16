@@ -24,8 +24,29 @@ void tasks_list_destroy(tasks_list_t* tasks_list) {
         return;
     }
     // todo: remove nodes and all resources allocated by them.
+    task_list_node_t* current_node = tasks_list->head;
+    task_list_node_t* next_node = NULL;
+    while (current_node != NULL) {
+        next_node = current_node->next;
+        destroy_task(current_node->task);
+        free(current_node);
+        current_node = next_node;
+    }   
     pthread_mutex_destroy(&(tasks_list->list_access_mutex));
     free(tasks_list);
+}
+
+void destroy_task(task_t* task) {
+    data_field_t* data_field = task->data_fields;
+    data_field_t* next_field = NULL;
+    while (data_field != NULL) {
+        next_field = data_field->next_field;
+        free(data_field);
+        data_field = next_field;
+    }
+    if (task->task_status == ACTIVE) {
+        timer_delete(task->timer);
+    }
 }
 
 // Send program arguments to server.
