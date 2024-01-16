@@ -106,6 +106,6 @@ data_field_t* create_data_field(char* data, pid_t pid);
 int is_iso8601_date(char* string);
 
 // Parses iso8601 date to seconds.
-unsigned long parse_iso8601_date_to_seconds(char* string);
+time_t parse_iso8601_date_to_seconds(char* string);
 
 #endif //TASK_SCHEDULER_TASK_SCHEDULER_H

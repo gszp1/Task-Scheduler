@@ -216,7 +216,7 @@ static int send_data_to_client(tasks_list_t* tasks_list, mqd_t client_queue) {
 static unsigned long get_time(char* time_string, int* time_type) {
     //timestamp: YYYY-MM-DDThh:mm:ss
     if (is_iso8601_date(time_string) == 1) {
-        
+
     }
 }
 
@@ -387,4 +387,20 @@ int is_iso8601_date(char* string) {
         ++counter;
     }
     return 1;
+}
+
+// Parses iso8601 date to seconds.
+time_t parse_iso8601_date_to_seconds(char* string) {
+    struct tm timeinfo = {0};
+
+    if (strptime(string, "%Y-%m-%dT%H:%M:%S", &timeinfo) == NULL) {
+        return -1;
+    }
+
+    time_t seconds = mktime(&timeinfo);
+    if (seconds == -1) {
+        return -1;
+    }
+
+    return seconds;
 }
