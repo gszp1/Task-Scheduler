@@ -109,7 +109,7 @@ int add_task(task_t* task, tasks_list_t* tasks_list);
 int add_data_to_task(tasks_list_t* tasks_list, pid_t pid, data_field_t* data_field);
 
 // Sets up and runs task.
-int run_task(tasks_list_t* tasks_list, pid_t pid);
+int run_task(tasks_list_t* tasks_list, pid_t pid, char*** envp);
 
 // fabrication functions //
 
