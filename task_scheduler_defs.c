@@ -228,13 +228,14 @@ void* timer_thread_task(void* arg) {
         pthread_mutex_unlock(&(data->tasks_list->list_access_mutex));
         return NULL;
     }
+    char** safe_ptr = NULL;
     while(data_field != NULL) {
         if (read_fields == 3) {
             strcpy(file_name, data_field->data);
         } else if (read_fields > 3) {
             *(arguments + number_of_arguments) = data_field->data;
             ++number_of_arguments;
-            char** safe_ptr = realloc(arguments, (number_of_arguments + 1) * sizeof(char*));
+            safe_ptr = realloc(arguments, (number_of_arguments + 1) * sizeof(char*));
             if (arguments == NULL) {
                 free(safe_ptr);
                 free(arguments);
@@ -247,6 +248,17 @@ void* timer_thread_task(void* arg) {
         ++read_fields;
         data_field = data_field->next_field;
     }
+    safe_ptr = realloc(arguments, (number_of_arguments + 1) * sizeof(char*));
+    if (arguments == NULL) {
+        free(safe_ptr);
+        free(arguments);
+        remove_task_by_id(data->tasks_list, data->task->task->id);
+        pthread_mutex_unlock(&(data->tasks_list->list_access_mutex));
+        return NULL;
+    }
+    arguments = safe_ptr;
+    *(safe_ptr + number_of_arguments) = NULL;
+
     if (posix_spawnp(&child_pid, file_name, NULL, NULL, arguments, *(data->envp)) == 0) {
         free(arguments);
         remove_task_by_id(data->tasks_list, data->task->task->id);
