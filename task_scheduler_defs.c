@@ -36,6 +36,7 @@ void tasks_list_destroy(tasks_list_t* tasks_list) {
     free(tasks_list);
 }
 
+// frees resources used by task
 void destroy_task(task_t* task) {
     data_field_t* data_field = task->data_fields;
     data_field_t* next_field = NULL;
@@ -50,6 +51,7 @@ void destroy_task(task_t* task) {
     free(task);
 }
 
+// removes node from tasks list and frees resources.
 void destroy_node(tasks_list_t* tasks_list, task_list_node_t* node) {
     if ((node == tasks_list->tail) && (node == tasks_list->head)) {
         tasks_list->tail = NULL;
@@ -202,6 +204,7 @@ static int remove_task_by_id(tasks_list_t* tasks_list, unsigned long id) {
     return 0;
 }
 
+// Function for sending data to client through queue.
 static int send_data_to_client(tasks_list_t* tasks_list, mqd_t client_queue) {
     if (tasks_list == NULL) {
         return 1;
@@ -219,6 +222,14 @@ static int send_data_to_client(tasks_list_t* tasks_list, mqd_t client_queue) {
         if (mq_send(client_queue, (char*)(&transfer_object), sizeof(client_transfer_object_t), 0) == -1) {
             return 1;
         }
+        if (current_node->task->task_status == ACTIVE) {
+            sprintf(transfer_object.content, "ACTIVE |");
+        } else {
+            sprintf(transfer_object.content, "DISABLED |");
+        }
+        if (mq_send(client_queue, (char*)(&transfer_object), sizeof(client_transfer_object_t), 0) == -1) {
+            return 1;
+        }
         while (data_field != NULL) {
             strcpy(transfer_object.content,  data_field->data);
             if (data_field->next_field == NULL) {
@@ -231,6 +242,7 @@ static int send_data_to_client(tasks_list_t* tasks_list, mqd_t client_queue) {
             }
             data_field = data_field->next_field;
         }
+        
         current_node = current_node->next;
     }
     transfer_object.content[0] = '\0';
