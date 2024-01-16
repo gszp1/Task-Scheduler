@@ -212,23 +212,6 @@ static int send_data_to_client(tasks_list_t* tasks_list, mqd_t client_queue) {
     return 0;
 }
 
-// Converts time in form of string (seconds or timestamp) to seconds.
-static time_t get_time(char* time_string, int* time_type) {
-    //timestamp: YYYY-MM-DDThh:mm:ss
-    if (is_iso8601_date(time_string) == 1) {
-        *time_type = 1;
-        return parse_iso8601_date_to_seconds(time_string);
-    }
-    *time_type = 0;
-    time_t time = strtol(time_string, NULL, 10);
-    if (time == 0 && (strcmp("0", time_string) != 0)){
-        return -1;
-    }
-    return time;
-}
-
-
-
 // message handlers //
 
 // Handler for task removal query
@@ -411,4 +394,19 @@ time_t parse_iso8601_date_to_seconds(char* string) {
     }
 
     return seconds;
+}
+
+// Converts time in form of string (seconds or timestamp) to seconds.
+time_t get_time(char* time_string, int* time_type) {
+    //timestamp: YYYY-MM-DDThh:mm:ss
+    if (is_iso8601_date(time_string) == 1) {
+        *time_type = 1;
+        return parse_iso8601_date_to_seconds(time_string);
+    }
+    *time_type = 0;
+    time_t time = strtol(time_string, NULL, 10);
+    if (time == 0 && (strcmp("0", time_string) != 0)){
+        return -1;
+    }
+    return time;
 }

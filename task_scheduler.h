@@ -108,4 +108,7 @@ int is_iso8601_date(char* string);
 // Parses iso8601 date to seconds.
 time_t parse_iso8601_date_to_seconds(char* string);
 
+// Converts time in form of string (seconds or timestamp) to seconds.
+time_t get_time(char* time_string, int* time_type);
+
 #endif //TASK_SCHEDULER_TASK_SCHEDULER_H
