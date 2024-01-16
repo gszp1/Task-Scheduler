@@ -213,10 +213,10 @@ static int send_data_to_client(tasks_list_t* tasks_list, mqd_t client_queue) {
 }
 
 // Converts time in form of string (seconds or timestamp) to seconds.
-static unsigned long get_time(char* time_string, int* time_type) {
+static time_t get_time(char* time_string, int* time_type) {
     //timestamp: YYYY-MM-DDThh:mm:ss
     if (is_iso8601_date(time_string) == 1) {
-
+        *time_type = 1;
     }
 }
 
@@ -265,6 +265,7 @@ static int add_task_query_handler(tasks_list_t* tasks_list, task_list_node_t* ta
     }
     unsigned long read_fields = 0;
     int time_type = 0; //relative / absoulute
+    time_t time = 0;
     while(data_field != NULL) {
         switch (read_fields) {
             case 0:
