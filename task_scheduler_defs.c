@@ -81,6 +81,7 @@ int add_task(task_t* task, tasks_list_t* tasks_list) {
     (tasks_list->max_id)++;
     task->id = tasks_list->max_id;
     task->task_status = DISABLED;
+    task->cyclic = 0;
     pthread_mutex_unlock(&(tasks_list->list_access_mutex));
     return 0;
 }
@@ -328,6 +329,9 @@ static int add_task_query_handler(tasks_list_t* tasks_list, task_list_node_t* ta
     }
     if (read_fields < 4) {
         return 1;
+    }
+    if (repeat_time != 0) {
+        task->task->cyclic = 1;
     }
 
     timer_function_data_t timer_data;

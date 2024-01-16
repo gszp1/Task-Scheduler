@@ -61,6 +61,7 @@ typedef struct data_field{
 typedef struct {
     pid_t pid; // pid of task giver.
     timer_t timer; // timer.
+    int cyclic;
     unsigned long id; // id of task.
     unsigned long number_of_fields; // number of fields sent by task giver.
     task_status_t task_status; // task status timer
