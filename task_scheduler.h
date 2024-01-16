@@ -32,6 +32,7 @@ typedef enum {
     REMOVE_TASK = 3 // -rm
 } query_type_t;
 
+// Structure for transfering data from server to client
 typedef struct {
     char content[MAX_ARGUMENT_SIZE + 1];
     char last_record_entry;
