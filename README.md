@@ -16,17 +16,13 @@ program powinien mieć możliwość zapisywania logów z wykorzystaniem bibliote
 zakończenie pracy programu powinno być równoznaczne z anulowaniem wszystkich zaplanowanych zadań;
 aplikacja powinna być zgodna ze standardami POSIX i języka C.
 
-Program commands are inserted through command line.  
-Inserting more flags than required or not providing all required ones, will cause the scheduler to ignore given task, even if it is partially correct.  
-Provide all required arguments, no more, no less.
-Transfering data between processes is based on POSIX queues, namely through mq_queues. The main, server, queue is named /serer_queue.  
-Queue created by user, through which server sends all tasks in the list is named /user_queuepid, where pid is replaced with user's process pid.  
-In both cases, data is transfered in 256 bytes blocks, with the last one being empty. 
-Run command:  
-./task_scheduler -flag -time_flag <time> <path> <args>  
-where:  
--flag ---> -a (add task) , -ls (print all tasks), -rm (remove task)  
--time_flag ---> -c (cyclic), -b (absolute time), default is relative time in seconds  
+0. Program specifications:  
+-  Program commands are inserted through command line.  
+-  Inserting more flags than required or not providing all required ones, will cause the scheduler to ignore given task, even if it is partially correct.  
+-  Provide all required arguments, no more, no less.
+-  Transfering data between processes is based on POSIX queues, namely through mq_queues. The main, server, queue is named /serer_queue.  
+-  Queue created by user, through which server sends all tasks in the list is named /user_queuepid, where pid is replaced with user's process pid.  
+-  In both cases, data is transfered in 256 bytes blocks, with the last one being empty. 
 1. Add task command.  
 -  Adds a task to run other program as child process.  
 -  add task structure: ./task_scheduler_out -a <seconds/timestamp> <repeat_time> <program_name> <args>  
