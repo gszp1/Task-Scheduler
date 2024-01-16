@@ -280,6 +280,9 @@ static int add_task_query_handler(tasks_list_t* tasks_list, task_list_node_t* ta
         ++read_fields;
         data_field = data_field->next_field;
     }
+    if (read_fields < 4) {
+        return 1;
+    }
 
 }
 
