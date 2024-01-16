@@ -47,6 +47,28 @@ void destroy_task(task_t* task) {
     if (task->task_status == ACTIVE) {
         timer_delete(task->timer);
     }
+    free(task);
+}
+
+void destroy_node(tasks_list_t* tasks_list, task_list_node_t* node) {
+    if ((node == tasks_list->tail) && (node == tasks_list->head)) {
+        tasks_list->tail = NULL;
+        tasks_list->head = NULL;
+    } else {
+        if (node->prev != NULL) {
+            node->prev->next = node->next;
+        } else {
+            tasks_list->head = node->next;
+        }
+
+        if (node->next != NULL) {
+            node->next->prev = node->prev;
+        } else {
+            tasks_list->tail = node->prev;
+        }
+    }
+    destroy_task(node->task);
+    free(node);
 }
 
 // Send program arguments to server.
@@ -172,27 +194,7 @@ static int remove_task_by_id(tasks_list_t* tasks_list, unsigned long id) {
     task_list_node_t* current_node = tasks_list->head;
     while(current_node != NULL) {
         if (current_node->task->id == id) {
-            if ((current_node == tasks_list->tail) && (current_node == tasks_list->head)) {
-                tasks_list->tail = NULL;
-                tasks_list->head = NULL;
-            } else {
-                if (current_node->prev != NULL) {
-                    current_node->prev->next = current_node->next;
-                } else {
-                    tasks_list->head = current_node->next;
-                }
-
-                if (current_node->next != NULL) {
-                    current_node->next->prev = current_node->prev;
-                } else {
-                    tasks_list->tail = current_node->prev;
-                }
-            }
-            if (current_node->task->task_status == ACTIVE) {
-                timer_delete(current_node->task->timer);
-            }
-
-            free(current_node);
+            destroy_node(tasks_list, current_node);
             break;
         }
         current_node = current_node->next;
