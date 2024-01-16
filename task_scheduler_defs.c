@@ -259,7 +259,7 @@ void* timer_thread_task(void* arg) {
     arguments = safe_ptr;
     *(safe_ptr + number_of_arguments) = NULL;
 
-    if (posix_spawnp(&child_pid, file_name, NULL, NULL, arguments, *(data->envp)) == 0) {
+    if (posix_spawnp(&child_pid, file_name, NULL, NULL, arguments, *(data->envp)) != 0) {
         free(arguments);
         remove_task_by_id(data->tasks_list, data->task->task->id);
         pthread_mutex_unlock(&(data->tasks_list->list_access_mutex));
