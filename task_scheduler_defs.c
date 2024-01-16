@@ -151,7 +151,6 @@ static int remove_task_by_id(tasks_list_t* tasks_list, unsigned long id) {
     task_list_node_t* current_node = tasks_list->head;
     while(current_node != NULL) {
         if (current_node->task->id == id) {
-            // todo: stop and remove clock
             if ((current_node == tasks_list->tail) && (current_node == tasks_list->head)) {
                 tasks_list->tail = NULL;
                 tasks_list->head = NULL;
@@ -168,6 +167,10 @@ static int remove_task_by_id(tasks_list_t* tasks_list, unsigned long id) {
                     tasks_list->tail = current_node->prev;
                 }
             }
+            if (current_node->task->task_status == ACTIVE) {
+                timer_delete(current_node->task->timer);
+            }
+
             free(current_node);
             break;
         }
