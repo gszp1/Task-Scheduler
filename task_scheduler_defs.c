@@ -397,10 +397,8 @@ time_t parse_iso8601_date_to_seconds(char* string) {
                &timeinfo.tm_hour, &timeinfo.tm_min, &timeinfo.tm_sec) != 6) {
         return -1;
     }
-
-    timeinfo.tm_year -= 1900;
     timeinfo.tm_mon--;
-
+    timeinfo.tm_year -= 1900;
     time_t seconds = mktime(&timeinfo);
     if (seconds == -1) {
         return -1;
