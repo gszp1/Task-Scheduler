@@ -80,6 +80,7 @@ int add_task(task_t* task, tasks_list_t* tasks_list) {
     }
     (tasks_list->max_id)++;
     task->id = tasks_list->max_id;
+    task->task_status = DISABLED;
     pthread_mutex_unlock(&(tasks_list->list_access_mutex));
     return 0;
 }
@@ -213,7 +214,7 @@ static int send_data_to_client(tasks_list_t* tasks_list, mqd_t client_queue) {
 }
 
 void* timer_thread_task(void* arg) {
-    print("HELLO WORLD\n");
+    printf("HELLO WORLD\n");
     return NULL;
 }
 
@@ -306,6 +307,7 @@ static int add_task_query_handler(tasks_list_t* tasks_list, task_list_node_t* ta
     } else {
         timer_settime(task->task->timer, TIMER_ABSTIME, &tispec, NULL);
     }
+    task->task->task_status = ACTIVE;
     return 0;
 }
 
