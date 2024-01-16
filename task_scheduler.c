@@ -97,12 +97,24 @@ int main(int argc, char* argv[], char* envp[]) {
             if (transfer_object.pid != current_pid) {
                 current_pid = transfer_object.pid;
                 task_t* new_task = create_new_task(transfer_object.content, transfer_object.pid);
+                if (new_task == NULL) {
+                    tasks_list_destroy(tasks_list);
+                    mq_close(server_msg_queue);
+                    mq_unlink(SERVER_QUEUE_NAME);
+                    return 1;
+                }
                 add_task(new_task, tasks_list);
             } else {
                 if (strcmp("", transfer_object.content) == 0) {
                     run_task(tasks_list, transfer_object.pid, &envp);
                 } else {
                     data_field_t* data_field = create_data_field(transfer_object.content, transfer_object.pid);
+                    if (data_field == NULL) {
+                        tasks_list_destroy(tasks_list);
+                        mq_close(server_msg_queue);
+                        mq_unlink(SERVER_QUEUE_NAME);
+                        return 1;   
+                    }
                     add_data_to_task(tasks_list, transfer_object.pid, data_field);
                 }
             }
