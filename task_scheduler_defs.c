@@ -413,3 +413,12 @@ time_t get_time(char* time_string, int* time_type) {
     }
     return time;
 }
+
+//Converts given string  to seconds.
+time_t convert_string_to_seconds(char* string) {
+    time_t time = strtol(string, NULL, 10);
+    if (time == 0 && (strcmp("0", string) != 0)){
+        return -1;
+    }
+    return time;
+}
