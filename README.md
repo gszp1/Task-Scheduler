@@ -35,3 +35,12 @@ aplikacja powinna być zgodna ze standardami POSIX i języka C.
 -  remove task structure: ./task_scheduler_out -rm <task_id>  
 -  correct command example: ./task_scheduler_out -rm 2137  
 -  wrong command example: ./task_scheduler_out -rm 214454 12232 hello
+4. Prepared scripts
+-  Repository includes few scripts that are not needed to run scheduler, but make development process and runing easier and faster.
+-  These scripts require bash installed, so they may not work properly outside Linux distributions (not tested).
+-  Add permission to execute these scripts.
+-  run.sh - runs scheduler.
+-  compile.sh - runs command to compile scheduler source code.
+-  compile_and_run.sh - compiles and runs scheduler.
+-  set_permissions.sh - sets permissions of all other scripts to execute.
+-  rm_queue.sh - removes server queue from system.
