@@ -254,6 +254,9 @@ void* timer_thread_task(void* arg) {
         return NULL;   
     }
     free(arguments);
+    if (data->task->task->cyclic == 0) {
+        remove_task_by_id(data->tasks_list, data->task->task->id);
+    }
     pthread_mutex_unlock(&(data->tasks_list->list_access_mutex));
 
     return NULL;
