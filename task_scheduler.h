@@ -32,6 +32,12 @@ typedef enum {
     REMOVE_TASK = 3 // -rm
 } query_type_t;
 
+// Enumerate for task status.
+typedef enum {
+    DISABLED = 0,
+    ACTIVE = 1
+} task_status_t;
+
 // Structure for transfering data from server to client
 typedef struct {
     char content[MAX_ARGUMENT_SIZE + 1];
