@@ -301,6 +301,11 @@ static int add_task_query_handler(tasks_list_t* tasks_list, task_list_node_t* ta
     tispec.it_value.tv_nsec = 0;
     tispec.it_interval.tv_sec = repeat_time;
     tispec.it_interval.tv_nsec = 0;
+    if(time_type == 0) {
+        timer_settime(task->task->timer, 0, &tispec, NULL);
+    } else {
+        timer_settime(task->task->timer, TIMER_ABSTIME, &tispec, NULL);
+    }
     return 0;
 }
 
