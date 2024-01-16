@@ -180,9 +180,11 @@ static int remove_task_by_id(tasks_list_t* tasks_list, unsigned long id) {
     return 0;
 }
 
+
 ///////////////////////////////
 // task processing functions //
 //////////////////////////////
+
 
 // Send program arguments to server.
 int queue_send_arguments(int argc, char* argv[], mqd_t message_queue) {
@@ -318,6 +320,7 @@ void* timer_thread_task(void* arg) {
 //////////////////////
 // message handlers //
 /////////////////////
+
 
 // Handler for task removal query
 static int remove_task_query_handler(tasks_list_t* tasks_list, task_list_node_t* task) {
