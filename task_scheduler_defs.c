@@ -2,7 +2,11 @@
 
 static pthread_mutex_t list_access_mutex = PTHREAD_MUTEX_INITIALIZER;
 
+
+///////////////////////////
 // functions definitions //
+//////////////////////////
+
 
 // Initialize tasks linked list.
 int task_list_init(tasks_list_t** tasks_list) {
@@ -25,7 +29,6 @@ void tasks_list_destroy(tasks_list_t* tasks_list) {
     if (tasks_list == NULL) {
         return;
     }
-    // todo: remove nodes and all resources allocated by them.
     task_list_node_t* current_node = tasks_list->head;
     task_list_node_t* next_node = NULL;
     while (current_node != NULL) {
@@ -317,7 +320,10 @@ void* timer_thread_task(void* arg) {
     return NULL;
 }
 
+
+//////////////////////
 // message handlers //
+/////////////////////
 
 // Handler for task removal query
 static int remove_task_query_handler(tasks_list_t* tasks_list, task_list_node_t* task) {
@@ -489,7 +495,11 @@ int run_task(tasks_list_t* tasks_list, pid_t pid, char*** envp) {
     return 0;
 }
 
+
+////////////////////
 // misc functions //
+///////////////////
+
 
 // Checks if date stored in string is ISO 8601 compliant. YYYY-MM-DDThh:mm:ss
 int is_iso8601_date(char* string) {
