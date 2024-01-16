@@ -99,7 +99,7 @@ int main(int argc, char* argv[], char* envp[]) {
                 add_task(new_task, tasks_list);
             } else {
                 if (strcmp("", transfer_object.content) == 0) {
-                    run_task(tasks_list, transfer_object.pid);
+                    run_task(tasks_list, transfer_object.pid, &envp);
                 } else {
                     data_field_t* data_field = create_data_field(transfer_object.content, transfer_object.pid);
                     add_data_to_task(tasks_list, transfer_object.pid, data_field);

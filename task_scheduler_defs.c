@@ -215,9 +215,12 @@ static int send_data_to_client(tasks_list_t* tasks_list, mqd_t client_queue) {
 
 void* timer_thread_task(void* arg) {
     timer_function_data_t* data = (timer_function_data_t*)arg;
-    pthread_mutex_lock(&(data->tasks_list->list_access_mutex));
+    // pthread_mutex_lock(&(data->tasks_list->list_access_mutex));
     
-    pthread_mutex_unlock(&(data->tasks_list->list_access_mutex));
+    // posix_spawnp(, , NULL, NULL, )
+
+
+    // pthread_mutex_unlock(&(data->tasks_list->list_access_mutex));
 
     return NULL;
 }
@@ -255,7 +258,7 @@ static int remove_task_query_handler(tasks_list_t* tasks_list, task_list_node_t*
 }
 
 // Handler for task addition query
-static int add_task_query_handler(tasks_list_t* tasks_list, task_list_node_t* task) {
+static int add_task_query_handler(tasks_list_t* tasks_list, task_list_node_t* task, char*** envp) {
     if ((tasks_list == NULL) || (task == NULL)) {
         return 1;
     }
@@ -297,6 +300,7 @@ static int add_task_query_handler(tasks_list_t* tasks_list, task_list_node_t* ta
     timer_function_data_t timer_data;
     timer_data.task = task;
     timer_data.tasks_list = tasks_list;
+    timer_data.envp = envp;
 
     struct sigevent timer_event;
     timer_event.sigev_notify = SIGEV_THREAD;
@@ -342,7 +346,7 @@ static int list_tasks_query_handler(tasks_list_t* tasks_list, task_list_node_t* 
 }
 
 // Sets up and runs task.
-int run_task(tasks_list_t* tasks_list, pid_t pid) {
+int run_task(tasks_list_t* tasks_list, pid_t pid, char*** envp) {
     printf("Starting new task.");
     if (tasks_list == NULL) {
         return 1;
@@ -362,10 +366,9 @@ int run_task(tasks_list_t* tasks_list, pid_t pid) {
     data_field_t* data_field = current_node->task->data_fields;
     switch (get_query_type(data_field->data)) {
         case ADD_TASK:
-            if (add_task_query_handler(tasks_list, current_node) != 0) {
+            if (add_task_query_handler(tasks_list, current_node, envp) != 0) {
                 remove_task_by_id(tasks_list, current_node->task->id);
             }
-            add_task_query_handler(tasks_list, current_node);
             break;
         case LIST_TASKS:
             list_tasks_query_handler(tasks_list, current_node);

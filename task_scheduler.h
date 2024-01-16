@@ -86,6 +86,7 @@ typedef struct {
 typedef struct timer_function_data {
     tasks_list_t* tasks_list;
     task_list_node_t* task;
+    char*** envp;
 } timer_function_data_t;
 // functions declarations //
 
