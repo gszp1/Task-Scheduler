@@ -97,6 +97,12 @@ int task_list_init(tasks_list_t** tasks_list);
 // Destroy tasks linked list.
 void tasks_list_destroy(tasks_list_t* tasks_list);
 
+// Destroys task.
+void destroy_task(task_t* task);
+
+// removes node from tasks list and frees resources.
+void destroy_node(tasks_list_t* tasks_list, task_list_node_t* node);
+
 // Send program arguments to server.
 int queue_send_arguments(int argc, char* argv[], mqd_t message_queue);
 

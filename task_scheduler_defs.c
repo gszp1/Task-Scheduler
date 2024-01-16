@@ -24,8 +24,51 @@ void tasks_list_destroy(tasks_list_t* tasks_list) {
         return;
     }
     // todo: remove nodes and all resources allocated by them.
+    task_list_node_t* current_node = tasks_list->head;
+    task_list_node_t* next_node = NULL;
+    while (current_node != NULL) {
+        next_node = current_node->next;
+        destroy_task(current_node->task);
+        free(current_node);
+        current_node = next_node;
+    }   
     pthread_mutex_destroy(&(tasks_list->list_access_mutex));
     free(tasks_list);
+}
+
+void destroy_task(task_t* task) {
+    data_field_t* data_field = task->data_fields;
+    data_field_t* next_field = NULL;
+    while (data_field != NULL) {
+        next_field = data_field->next_field;
+        free(data_field);
+        data_field = next_field;
+    }
+    if (task->task_status == ACTIVE) {
+        timer_delete(task->timer);
+    }
+    free(task);
+}
+
+void destroy_node(tasks_list_t* tasks_list, task_list_node_t* node) {
+    if ((node == tasks_list->tail) && (node == tasks_list->head)) {
+        tasks_list->tail = NULL;
+        tasks_list->head = NULL;
+    } else {
+        if (node->prev != NULL) {
+            node->prev->next = node->next;
+        } else {
+            tasks_list->head = node->next;
+        }
+
+        if (node->next != NULL) {
+            node->next->prev = node->prev;
+        } else {
+            tasks_list->tail = node->prev;
+        }
+    }
+    destroy_task(node->task);
+    free(node);
 }
 
 // Send program arguments to server.
@@ -151,27 +194,7 @@ static int remove_task_by_id(tasks_list_t* tasks_list, unsigned long id) {
     task_list_node_t* current_node = tasks_list->head;
     while(current_node != NULL) {
         if (current_node->task->id == id) {
-            if ((current_node == tasks_list->tail) && (current_node == tasks_list->head)) {
-                tasks_list->tail = NULL;
-                tasks_list->head = NULL;
-            } else {
-                if (current_node->prev != NULL) {
-                    current_node->prev->next = current_node->next;
-                } else {
-                    tasks_list->head = current_node->next;
-                }
-
-                if (current_node->next != NULL) {
-                    current_node->next->prev = current_node->prev;
-                } else {
-                    tasks_list->tail = current_node->prev;
-                }
-            }
-            if (current_node->task->task_status == ACTIVE) {
-                timer_delete(current_node->task->timer);
-            }
-
-            free(current_node);
+            destroy_node(tasks_list, current_node);
             break;
         }
         current_node = current_node->next;
@@ -217,6 +240,7 @@ static int send_data_to_client(tasks_list_t* tasks_list, mqd_t client_queue) {
     return 0;
 }
 
+// task executed by thread called by timer.
 void* timer_thread_task(void* arg) {
     timer_function_data_t* data = (timer_function_data_t*)arg;
     pthread_mutex_lock(&(data->tasks_list->list_access_mutex));
@@ -419,20 +443,20 @@ int run_task(tasks_list_t* tasks_list, pid_t pid, char*** envp) {
     switch (get_query_type(data_field->data)) {
         case ADD_TASK:
             if (add_task_query_handler(tasks_list, current_node, envp) != 0) {
-                remove_task_by_id(tasks_list, current_node->task->id);
+                destroy_node(tasks_list, current_node);
             }
             break;
         case LIST_TASKS:
             list_tasks_query_handler(tasks_list, current_node);
-            remove_task_by_id(tasks_list, current_node->task->id);
+            destroy_node(tasks_list, current_node);
             break;
         case REMOVE_TASK:
             remove_task_query_handler(tasks_list, current_node);
-            remove_task_by_id(tasks_list, current_node->task->id);
+            destroy_node(tasks_list, current_node);
             break;
         default:
+            destroy_node(tasks_list, current_node);
             pthread_mutex_unlock(&(tasks_list->list_access_mutex));
-            remove_task_by_id(tasks_list, current_node->task->id);
             return 2;
     }
     pthread_mutex_unlock(&(tasks_list->list_access_mutex));
