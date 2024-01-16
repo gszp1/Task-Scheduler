@@ -240,6 +240,7 @@ static int send_data_to_client(tasks_list_t* tasks_list, mqd_t client_queue) {
     return 0;
 }
 
+// task executed by thread called by timer.
 void* timer_thread_task(void* arg) {
     timer_function_data_t* data = (timer_function_data_t*)arg;
     pthread_mutex_lock(&(data->tasks_list->list_access_mutex));
