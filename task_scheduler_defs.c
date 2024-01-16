@@ -214,7 +214,7 @@ static int send_data_to_client(tasks_list_t* tasks_list, mqd_t client_queue) {
 }
 
 void* timer_thread_task(void* arg) {
-    printf("HELLO WORLD\n");
+    timer_function_data_t* data = (timer_function_data_t*)arg;
     return NULL;
 }
 
@@ -290,10 +290,14 @@ static int add_task_query_handler(tasks_list_t* tasks_list, task_list_node_t* ta
         return 1;
     }
 
+    timer_function_data_t timer_data;
+    timer_data.task = task;
+    timer_data.tasks_list = tasks_list;
+
     struct sigevent timer_event;
     timer_event.sigev_notify = SIGEV_THREAD;
     timer_event.sigev_notify_function = timer_thread_task;
-    timer_event.sigev_value.sival_ptr = NULL;
+    timer_event.sigev_value.sival_ptr = &timer_data;
     timer_event.sigev_notify_attributes = NULL;
     timer_create(CLOCK_REALTIME, &timer_event, &(task->task->timer)); 
     
