@@ -249,10 +249,12 @@ static int add_task_query_handler(tasks_list_t* tasks_list, task_list_node_t* ta
     if ((tasks_list == NULL) || (task == NULL)) {
         return 1;
     }
+    printf("t1\n");
     data_field_t* data_field = task->task->data_fields;
     if (data_field == NULL) {
         return 1;
     }
+    printf("t2\n");
     unsigned long read_fields = 0;
     int time_type = 0; //relative / absoulute
     time_t time = 0;
@@ -260,17 +262,20 @@ static int add_task_query_handler(tasks_list_t* tasks_list, task_list_node_t* ta
     while(data_field != NULL) {
         switch (read_fields) {
             case 0:
+                printf("t3\n");
                 if (get_query_type(data_field->data) != ADD_TASK) {
                     return 1;
                 }
                 break;
             case 1:
+                printf("t4\n");
                 time = get_time(data_field->data, &time_type);
                 if (time == -1) {
                     return 1;
                 }
                 break;
             case 2:
+                printf("t5\n");
                 repeat_time = convert_string_to_seconds(data_field->data);
                 if (repeat_time == -1) {
                     return 1;
@@ -280,15 +285,17 @@ static int add_task_query_handler(tasks_list_t* tasks_list, task_list_node_t* ta
         ++read_fields;
         data_field = data_field->next_field;
     }
+    printf("t6 %lu\n", read_fields);
     if (read_fields < 4) {
         return 1;
     }
+    printf("t7\n");
     struct itimerspec tispec;
     tispec.it_value.tv_sec = time;
     tispec.it_value.tv_nsec = 0;
     tispec.it_interval.tv_sec = repeat_time;
     tispec.it_interval.tv_nsec = 0;
-
+    return 0;
 }
 
 // Handler for task listing query
