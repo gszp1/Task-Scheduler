@@ -1,6 +1,9 @@
 #ifndef TASK_SCHEDULER_TASK_SCHEDULER_H
 #define TASK_SCHEDULER_TASK_SCHEDULER_H
 
+#define _POSIX_SOURCE
+#define _GNU_SOURCE
+
 // Macros //
 #define SERVER_QUEUE_NAME "/server_queue"
 #define USER_QUEUE_NAME "/user_queue"
