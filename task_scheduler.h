@@ -62,7 +62,7 @@ typedef struct {
     timer_t timer; // timer.
     unsigned long id; // id of task.
     unsigned long number_of_fields; // number of fields sent by task giver.
-    task_status_t task_status; // task status
+    task_status_t task_status; // task status timer
     data_field_t* data_fields; // fields sent by task giver (single linked list).
 } task_t;
 
@@ -81,6 +81,11 @@ typedef struct {
     unsigned long max_id;
 } tasks_list_t;
 
+// Data given to function run by timer.
+typedef struct timer_function_data {
+    tasks_list_t* tasks_list;
+    task_list_node_t task;
+} timer_function_data;
 // functions declarations //
 
 // Initialize tasks linked list.
