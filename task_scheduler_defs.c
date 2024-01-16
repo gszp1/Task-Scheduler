@@ -7,6 +7,10 @@ static pthread_mutex_t list_access_mutex = PTHREAD_MUTEX_INITIALIZER;
 // functions definitions //
 //////////////////////////
 
+////////////////////////////////////////
+// linked list manipulation functions //
+///////////////////////////////////////
+
 
 // Initialize tasks linked list.
 int task_list_init(tasks_list_t** tasks_list) {
@@ -22,23 +26,6 @@ int task_list_init(tasks_list_t** tasks_list) {
     (*tasks_list)->max_id = 0;
     pthread_mutex_init(&((*tasks_list)->list_access_mutex), NULL);
     return 0;
-}
-
-// Destroy tasks linked list.
-void tasks_list_destroy(tasks_list_t* tasks_list) {
-    if (tasks_list == NULL) {
-        return;
-    }
-    task_list_node_t* current_node = tasks_list->head;
-    task_list_node_t* next_node = NULL;
-    while (current_node != NULL) {
-        next_node = current_node->next;
-        destroy_task(current_node->task);
-        free(current_node);
-        current_node = next_node;
-    }   
-    pthread_mutex_destroy(&(tasks_list->list_access_mutex));
-    free(tasks_list);
 }
 
 // frees resources used by task
@@ -78,62 +65,47 @@ void destroy_node(tasks_list_t* tasks_list, task_list_node_t* node) {
     free(node);
 }
 
-// Send program arguments to server.
-int queue_send_arguments(int argc, char* argv[], mqd_t message_queue) {
-    transfer_object_t transfer_object;
-    transfer_object.pid = getpid();
-    for (int i = 1; i < argc; ++i) {
-        int counter = 0;
-        while (argv[i][counter] != '\0' && counter < MAX_ARGUMENT_SIZE) {
-            transfer_object.content[counter] = argv[i][counter];
-            ++counter;
-        }
-        transfer_object.content[counter] = '\0';
-        if (mq_send(message_queue, (char*)(&transfer_object), sizeof(transfer_object_t), 0) == -1) {
-            return 1;
-        }
+// Destroy tasks linked list.
+void tasks_list_destroy(tasks_list_t* tasks_list) {
+    if (tasks_list == NULL) {
+        return;
     }
-    transfer_object.content[0] = '\0';
-    return mq_send(message_queue, (char*)(&transfer_object), sizeof(transfer_object_t), 0);
+    task_list_node_t* current_node = tasks_list->head;
+    task_list_node_t* next_node = NULL;
+    while (current_node != NULL) {
+        next_node = current_node->next;
+        destroy_task(current_node->task);
+        free(current_node);
+        current_node = next_node;
+    }   
+    pthread_mutex_destroy(&(tasks_list->list_access_mutex));
+    free(tasks_list);
 }
 
-// Checks if given string is a flag.
-int get_query_type(char* flag) {
-    if (strcmp(flag, "-a") == 0) {
-        return ADD_TASK;
-    }
-    if (strcmp(flag, "-rm") == 0) {
-        return REMOVE_TASK;
-    }
-    if (strcmp(flag, "-ls") == 0) {
-        return LIST_TASKS;
-    }
-    return 0;
+// Creates new task.
+task_t* create_new_task(char* field, pid_t pid) {
+    task_t* new_task = malloc(sizeof(task_t));
+    new_task->pid = pid;
+    new_task->number_of_fields = 1;
+    data_field_t* data_field = malloc(sizeof(data_field_t));
+    data_field->next_field = NULL;
+    strcpy(data_field->data, field);
+    new_task->data_fields = data_field;
+    return new_task;
 }
 
-// Adds task to tasks list.
-int add_task(task_t* task, tasks_list_t* tasks_list) {
-    task_list_node_t* new_node = malloc(sizeof(task_list_node_t));
-    if (new_node == NULL) {
-        return 1;
+// Creates new data field.
+data_field_t* create_data_field(char* data, pid_t pid) {
+    if (data == NULL) {
+        return NULL;
     }
-    new_node->task = task;
-    new_node->next = NULL;
-    pthread_mutex_lock(&(tasks_list->list_access_mutex));
-    new_node->prev = tasks_list->tail;
-    if (tasks_list->tail != NULL) {
-        tasks_list->tail->next = new_node;
+    data_field_t* new_data_field = malloc(sizeof(data_field_t));
+    if (new_data_field == NULL) {
+        return NULL;
     }
-    tasks_list->tail = new_node;
-    if (tasks_list->head == NULL) {
-        tasks_list->head = new_node;
-    }
-    (tasks_list->max_id)++;
-    task->id = tasks_list->max_id;
-    task->task_status = DISABLED;
-    task->cyclic = 0;
-    pthread_mutex_unlock(&(tasks_list->list_access_mutex));
-    return 0;
+    new_data_field->next_field = NULL;
+    strcpy(new_data_field->data, data);
+    return new_data_field;
 }
 
 // Adds data field read from queue to task.
@@ -167,30 +139,66 @@ int add_data_to_task(tasks_list_t* tasks_list, pid_t pid, data_field_t* data_fie
     return 0;
 }
 
-// Creates new task.
-task_t* create_new_task(char* field, pid_t pid) {
-    task_t* new_task = malloc(sizeof(task_t));
-    new_task->pid = pid;
-    new_task->number_of_fields = 1;
-    data_field_t* data_field = malloc(sizeof(data_field_t));
-    data_field->next_field = NULL;
-    strcpy(data_field->data, field);
-    new_task->data_fields = data_field;
-    return new_task;
+// Adds task to tasks list.
+int add_task(task_t* task, tasks_list_t* tasks_list) {
+    task_list_node_t* new_node = malloc(sizeof(task_list_node_t));
+    if (new_node == NULL) {
+        return 1;
+    }
+    new_node->task = task;
+    new_node->next = NULL;
+    pthread_mutex_lock(&(tasks_list->list_access_mutex));
+    new_node->prev = tasks_list->tail;
+    if (tasks_list->tail != NULL) {
+        tasks_list->tail->next = new_node;
+    }
+    tasks_list->tail = new_node;
+    if (tasks_list->head == NULL) {
+        tasks_list->head = new_node;
+    }
+    (tasks_list->max_id)++;
+    task->id = tasks_list->max_id;
+    task->task_status = DISABLED;
+    task->cyclic = 0;
+    pthread_mutex_unlock(&(tasks_list->list_access_mutex));
+    return 0;
 }
 
-// Creates new data field.
-data_field_t* create_data_field(char* data, pid_t pid) {
-    if (data == NULL) {
-        return NULL;
+///////////////////////////////
+// task processing functions //
+//////////////////////////////
+
+// Send program arguments to server.
+int queue_send_arguments(int argc, char* argv[], mqd_t message_queue) {
+    transfer_object_t transfer_object;
+    transfer_object.pid = getpid();
+    for (int i = 1; i < argc; ++i) {
+        int counter = 0;
+        while (argv[i][counter] != '\0' && counter < MAX_ARGUMENT_SIZE) {
+            transfer_object.content[counter] = argv[i][counter];
+            ++counter;
+        }
+        transfer_object.content[counter] = '\0';
+        if (mq_send(message_queue, (char*)(&transfer_object), sizeof(transfer_object_t), 0) == -1) {
+            return 1;
+        }
     }
-    data_field_t* new_data_field = malloc(sizeof(data_field_t));
-    if (new_data_field == NULL) {
-        return NULL;
+    transfer_object.content[0] = '\0';
+    return mq_send(message_queue, (char*)(&transfer_object), sizeof(transfer_object_t), 0);
+}
+
+// Checks if given string is a flag.
+int get_query_type(char* flag) {
+    if (strcmp(flag, "-a") == 0) {
+        return ADD_TASK;
     }
-    new_data_field->next_field = NULL;
-    strcpy(new_data_field->data, data);
-    return new_data_field;
+    if (strcmp(flag, "-rm") == 0) {
+        return REMOVE_TASK;
+    }
+    if (strcmp(flag, "-ls") == 0) {
+        return LIST_TASKS;
+    }
+    return 0;
 }
 
 // Removes task with given ID.
