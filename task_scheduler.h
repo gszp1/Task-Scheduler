@@ -1,6 +1,9 @@
 #ifndef TASK_SCHEDULER_TASK_SCHEDULER_H
 #define TASK_SCHEDULER_TASK_SCHEDULER_H
 
+#define _POSIX_SOURCE
+#define _GNU_SOURCE
+
 // Macros //
 #define SERVER_QUEUE_NAME "/server_queue"
 #define USER_QUEUE_NAME "/user_queue"
@@ -18,6 +21,8 @@
 #include <unistd.h>
 #include <pthread.h>
 #include <string.h>
+#include <signal.h>
+#include <spawn.h>
 
 // data types  //
 
@@ -28,6 +33,13 @@ typedef enum {
     REMOVE_TASK = 3 // -rm
 } query_type_t;
 
+// Enumerate for task status.
+typedef enum {
+    DISABLED = 0,
+    ACTIVE = 1
+} task_status_t;
+
+// Structure for transfering data from server to client
 typedef struct {
     char content[MAX_ARGUMENT_SIZE + 1];
     char last_record_entry;
@@ -49,8 +61,10 @@ typedef struct data_field{
 typedef struct {
     pid_t pid; // pid of task giver.
     timer_t timer; // timer.
+    int cyclic;
     unsigned long id; // id of task.
     unsigned long number_of_fields; // number of fields sent by task giver.
+    task_status_t task_status; // task status timer
     data_field_t* data_fields; // fields sent by task giver (single linked list).
 } task_t;
 
@@ -69,6 +83,12 @@ typedef struct {
     unsigned long max_id;
 } tasks_list_t;
 
+// Data given to function run by timer.
+typedef struct timer_function_data {
+    tasks_list_t* tasks_list;
+    task_list_node_t* task;
+    char*** envp;
+} timer_function_data_t;
 // functions declarations //
 
 // Initialize tasks linked list.
@@ -90,7 +110,7 @@ int add_task(task_t* task, tasks_list_t* tasks_list);
 int add_data_to_task(tasks_list_t* tasks_list, pid_t pid, data_field_t* data_field);
 
 // Sets up and runs task.
-int run_task(tasks_list_t* tasks_list, pid_t pid);
+int run_task(tasks_list_t* tasks_list, pid_t pid, char*** envp);
 
 // fabrication functions //
 
@@ -99,5 +119,19 @@ task_t* create_new_task(char* field, pid_t pid);
 
 // Creates new data field.
 data_field_t* create_data_field(char* data, pid_t pid);
+
+// misc functions //
+
+// Checks if date stored in string is ISO 8601 compliant. YYYY-MM-DDThh:mm:ss
+int is_iso8601_date(char* string);
+
+// Parses iso8601 date to seconds.
+time_t parse_iso8601_date_to_seconds(char* string);
+
+// Converts time in form of string (seconds or timestamp) to seconds.
+time_t get_time(char* time_string, int* time_type);
+
+//Converts given string  to seconds.
+time_t convert_string_to_seconds(char* string);
 
 #endif //TASK_SCHEDULER_TASK_SCHEDULER_H

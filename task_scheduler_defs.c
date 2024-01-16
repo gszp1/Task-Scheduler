@@ -80,6 +80,8 @@ int add_task(task_t* task, tasks_list_t* tasks_list) {
     }
     (tasks_list->max_id)++;
     task->id = tasks_list->max_id;
+    task->task_status = DISABLED;
+    task->cyclic = 0;
     pthread_mutex_unlock(&(tasks_list->list_access_mutex));
     return 0;
 }
@@ -212,6 +214,63 @@ static int send_data_to_client(tasks_list_t* tasks_list, mqd_t client_queue) {
     return 0;
 }
 
+void* timer_thread_task(void* arg) {
+    timer_function_data_t* data = (timer_function_data_t*)arg;
+    pthread_mutex_lock(&(data->tasks_list->list_access_mutex));
+    pid_t child_pid;
+    data_field_t* data_field = data->task->task->data_fields;
+    unsigned long read_fields = 0;
+    unsigned long number_of_arguments = 0;
+    char** arguments = malloc(sizeof(char*));
+    if (arguments == NULL) {
+        remove_task_by_id(data->tasks_list, data->task->task->id);
+        pthread_mutex_unlock(&(data->tasks_list->list_access_mutex));
+        return NULL;
+    }
+    char** safe_ptr = NULL;
+    while(data_field != NULL) {
+        if (read_fields >= 3) {
+            *(arguments + number_of_arguments) = data_field->data;
+            ++number_of_arguments;
+            safe_ptr = realloc(arguments, (number_of_arguments + 1) * sizeof(char*));
+            if (arguments == NULL) {
+                free(safe_ptr);
+                free(arguments);
+                remove_task_by_id(data->tasks_list, data->task->task->id);
+                pthread_mutex_unlock(&(data->tasks_list->list_access_mutex));
+                return NULL;
+            }
+            arguments = safe_ptr;
+        }
+        ++read_fields;
+        data_field = data_field->next_field;
+    }
+    safe_ptr = realloc(arguments, (number_of_arguments + 1) * sizeof(char*));
+    if (arguments == NULL) {
+        free(safe_ptr);
+        free(arguments);
+        remove_task_by_id(data->tasks_list, data->task->task->id);
+        pthread_mutex_unlock(&(data->tasks_list->list_access_mutex));
+        return NULL;
+    }
+    arguments = safe_ptr;
+    *(safe_ptr + number_of_arguments) = NULL;
+
+    if (posix_spawnp(&child_pid, *arguments, NULL, NULL, arguments, *(data->envp)) != 0) {
+        free(arguments);
+        remove_task_by_id(data->tasks_list, data->task->task->id);
+        pthread_mutex_unlock(&(data->tasks_list->list_access_mutex));
+        return NULL;   
+    }
+    free(arguments);
+    if (data->task->task->cyclic == 0) {
+        remove_task_by_id(data->tasks_list, data->task->task->id);
+    }
+    pthread_mutex_unlock(&(data->tasks_list->list_access_mutex));
+
+    return NULL;
+}
+
 // message handlers //
 
 // Handler for task removal query
@@ -245,12 +304,72 @@ static int remove_task_query_handler(tasks_list_t* tasks_list, task_list_node_t*
 }
 
 // Handler for task addition query
-static int add_task_query_handler(tasks_list_t* tasks_list, task_list_node_t* task) {
+static int add_task_query_handler(tasks_list_t* tasks_list, task_list_node_t* task, char*** envp) {
     if ((tasks_list == NULL) || (task == NULL)) {
         return 1;
     }
+    data_field_t* data_field = task->task->data_fields;
+    if (data_field == NULL) {
+        return 1;
+    }
+    unsigned long read_fields = 0;
+    int time_type = 0; //relative / absoulute
+    time_t time = 0;
+    time_t repeat_time = 0;
+    while(data_field != NULL) {
+        switch (read_fields) {
+            case 0:
+                if (get_query_type(data_field->data) != ADD_TASK) {
+                    return 1;
+                }
+                break;
+            case 1:
+                time = get_time(data_field->data, &time_type);
+                if (time == -1) {
+                    return 1;
+                }
+                break;
+            case 2:
+                repeat_time = convert_string_to_seconds(data_field->data);
+                if (repeat_time == -1) {
+                    return 1;
+                }
+                break;
+        }
+        ++read_fields;
+        data_field = data_field->next_field;
+    }
+    if (read_fields < 4) {
+        return 1;
+    }
+    if (repeat_time != 0) {
+        task->task->cyclic = 1;
+    }
 
+    timer_function_data_t timer_data;
+    timer_data.task = task;
+    timer_data.tasks_list = tasks_list;
+    timer_data.envp = envp;
 
+    struct sigevent timer_event;
+    timer_event.sigev_notify = SIGEV_THREAD;
+    timer_event.sigev_notify_function = timer_thread_task;
+    timer_event.sigev_value.sival_ptr = &timer_data;
+    timer_event.sigev_notify_attributes = NULL;
+    timer_create(CLOCK_REALTIME, &timer_event, &(task->task->timer)); 
+    
+    struct itimerspec tispec;
+    tispec.it_value.tv_sec = time;
+    tispec.it_value.tv_nsec = 0;
+    tispec.it_interval.tv_sec = repeat_time;
+    tispec.it_interval.tv_nsec = 0;
+    if(time_type == 0) {
+        timer_settime(task->task->timer, 0, &tispec, NULL);
+    } else {
+        timer_settime(task->task->timer, TIMER_ABSTIME, &tispec, NULL);
+    }
+    task->task->task_status = ACTIVE;
+    return 0;
 }
 
 // Handler for task listing query
@@ -276,7 +395,7 @@ static int list_tasks_query_handler(tasks_list_t* tasks_list, task_list_node_t* 
 }
 
 // Sets up and runs task.
-int run_task(tasks_list_t* tasks_list, pid_t pid) {
+int run_task(tasks_list_t* tasks_list, pid_t pid, char*** envp) {
     printf("Starting new task.");
     if (tasks_list == NULL) {
         return 1;
@@ -296,10 +415,9 @@ int run_task(tasks_list_t* tasks_list, pid_t pid) {
     data_field_t* data_field = current_node->task->data_fields;
     switch (get_query_type(data_field->data)) {
         case ADD_TASK:
-            if (add_task_query_handler(tasks_list, current_node) != 0) {
+            if (add_task_query_handler(tasks_list, current_node, envp) != 0) {
                 remove_task_by_id(tasks_list, current_node->task->id);
             }
-            add_task_query_handler(tasks_list, current_node);
             break;
         case LIST_TASKS:
             list_tasks_query_handler(tasks_list, current_node);
@@ -316,4 +434,81 @@ int run_task(tasks_list_t* tasks_list, pid_t pid) {
     }
     pthread_mutex_unlock(&(tasks_list->list_access_mutex));
     return 0;
+}
+
+// misc functions //
+
+// Checks if date stored in string is ISO 8601 compliant. YYYY-MM-DDThh:mm:ss
+int is_iso8601_date(char* string) {
+    if (strlen(string) != 19) {
+        return 0;
+    }
+    int counter = 0;
+    while (*(string + counter) != '\0') {
+        switch(counter){
+            case 4:
+            case 7:
+                if (*(string + counter) != '-') {
+                    return 0;
+                }
+                break;
+            case 10:
+                if (*(string + counter) != 'T') {
+                    return 0;
+                }
+                break;
+            case 13:
+            case 16:
+                if (*(string + counter) != ':') {
+                    return 0;
+                }
+                break;            
+            default:
+                if ((*(string + counter) < '0') || (*(string + counter) > '9')) {
+                    return 0;
+                }
+                break;
+        }
+        ++counter;
+    }
+    return 1;
+}
+
+// Parses iso8601 date to seconds.
+time_t parse_iso8601_date_to_seconds(char* string) {
+    struct tm timeinfo = {0};
+
+    if (sscanf(string, "%d-%d-%dT%d:%d:%d",
+               &timeinfo.tm_year, &timeinfo.tm_mon, &timeinfo.tm_mday,
+               &timeinfo.tm_hour, &timeinfo.tm_min, &timeinfo.tm_sec) != 6) {
+        return -1;
+    }
+    timeinfo.tm_mon--;
+    timeinfo.tm_year -= 1900;
+    time_t seconds = mktime(&timeinfo);
+    if (seconds == -1) {
+        return -1;
+    }
+
+    return seconds;
+}
+
+// Converts time in form of string (seconds or timestamp) to seconds.
+time_t get_time(char* time_string, int* time_type) {
+    //timestamp: YYYY-MM-DDThh:mm:ss
+    if (is_iso8601_date(time_string) == 1) {
+        *time_type = 1;
+        return parse_iso8601_date_to_seconds(time_string);
+    }
+    *time_type = 0;
+    return convert_string_to_seconds(time_string);
+}
+
+//Converts given string  to seconds.
+time_t convert_string_to_seconds(char* string) {
+    time_t time = strtol(string, NULL, 10);
+    if (time == 0 && (strcmp("0", string) != 0)){
+        return -1;
+    }
+    return time;
 }
