@@ -442,20 +442,20 @@ int run_task(tasks_list_t* tasks_list, pid_t pid, char*** envp) {
     switch (get_query_type(data_field->data)) {
         case ADD_TASK:
             if (add_task_query_handler(tasks_list, current_node, envp) != 0) {
-                remove_task_by_id(tasks_list, current_node->task->id);
+                remove_task_by_id(tasks_list, current_node);
             }
             break;
         case LIST_TASKS:
             list_tasks_query_handler(tasks_list, current_node);
-            remove_task_by_id(tasks_list, current_node->task->id);
+            destroy_node(tasks_list, current_node);
             break;
         case REMOVE_TASK:
             remove_task_query_handler(tasks_list, current_node);
-            remove_task_by_id(tasks_list, current_node->task->id);
+            remove_task_by_id(tasks_list, current_node);
             break;
         default:
             pthread_mutex_unlock(&(tasks_list->list_access_mutex));
-            remove_task_by_id(tasks_list, current_node->task->id);
+            remove_task_by_id(tasks_list, current_node);
             return 2;
     }
     pthread_mutex_unlock(&(tasks_list->list_access_mutex));
