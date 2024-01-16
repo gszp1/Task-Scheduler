@@ -264,7 +264,10 @@ static int add_task_query_handler(tasks_list_t* tasks_list, task_list_node_t* ta
                 }
                 break;
             case 1:
-
+                time = get_time(data_field->data, &time_type);
+                if (time == -1) {
+                    return 1;
+                }
                 break;
             case 2:
                 break;
