@@ -407,11 +407,7 @@ time_t get_time(char* time_string, int* time_type) {
         return parse_iso8601_date_to_seconds(time_string);
     }
     *time_type = 0;
-    time_t time = strtol(time_string, NULL, 10);
-    if (time == 0 && (strcmp("0", time_string) != 0)){
-        return -1;
-    }
-    return time;
+    return convert_string_to_seconds(time_string);
 }
 
 //Converts given string  to seconds.
