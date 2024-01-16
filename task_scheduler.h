@@ -21,6 +21,7 @@
 #include <unistd.h>
 #include <pthread.h>
 #include <string.h>
+#include <signal.h>
 
 // data types  //
 
