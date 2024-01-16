@@ -217,7 +217,14 @@ static time_t get_time(char* time_string, int* time_type) {
     //timestamp: YYYY-MM-DDThh:mm:ss
     if (is_iso8601_date(time_string) == 1) {
         *time_type = 1;
+        return parse_iso8601_date_to_seconds(time_string);
     }
+    *time_type = 0;
+    time_t time = strtol(time_string, NULL, 10);
+    if (time == 0 && (strcmp("0", time_string) != 0)){
+        return -1;
+    }
+    return time;
 }
 
 
