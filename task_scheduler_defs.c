@@ -256,6 +256,7 @@ static int send_data_to_client(tasks_list_t* tasks_list, mqd_t client_queue) {
 
 // task executed by thread called by timer.
 void* timer_thread_task(void* arg) {
+    pthread_mutex_lock(&list_access_mutex);
     timer_function_data_t* data = (timer_function_data_t*)arg;
     pthread_mutex_lock(&(data->tasks_list->list_access_mutex));
     pid_t child_pid;
@@ -266,6 +267,7 @@ void* timer_thread_task(void* arg) {
     if (arguments == NULL) {
         remove_task_by_id(data->tasks_list, data->task->task->id);
         pthread_mutex_unlock(&(data->tasks_list->list_access_mutex));
+        pthread_mutex_unlock(&list_access_mutex);
         return NULL;
     }
     char** safe_ptr = NULL;
@@ -279,6 +281,7 @@ void* timer_thread_task(void* arg) {
                 free(arguments);
                 remove_task_by_id(data->tasks_list, data->task->task->id);
                 pthread_mutex_unlock(&(data->tasks_list->list_access_mutex));
+                pthread_mutex_unlock(&list_access_mutex);
                 return NULL;
             }
             arguments = safe_ptr;
@@ -292,6 +295,7 @@ void* timer_thread_task(void* arg) {
         free(arguments);
         remove_task_by_id(data->tasks_list, data->task->task->id);
         pthread_mutex_unlock(&(data->tasks_list->list_access_mutex));
+        pthread_mutex_unlock(&list_access_mutex);
         return NULL;
     }
     arguments = safe_ptr;
@@ -301,14 +305,15 @@ void* timer_thread_task(void* arg) {
         free(arguments);
         remove_task_by_id(data->tasks_list, data->task->task->id);
         pthread_mutex_unlock(&(data->tasks_list->list_access_mutex));
+        pthread_mutex_unlock(&list_access_mutex);
         return NULL;   
     }
     free(arguments);
     if (data->task->task->cyclic == 0) {
-        remove_task_by_id(data->tasks_list, data->task->task->id);
+        // remove_task_by_id(data->tasks_list, data->task->task->id);
     }
     pthread_mutex_unlock(&(data->tasks_list->list_access_mutex));
-
+    pthread_mutex_unlock(&list_access_mutex);
     return NULL;
 }
 
@@ -437,6 +442,8 @@ static int list_tasks_query_handler(tasks_list_t* tasks_list, task_list_node_t* 
 
 // Sets up and runs task.
 int run_task(tasks_list_t* tasks_list, pid_t pid, char*** envp) {
+    pthread_mutex_lock(&list_access_mutex);
+
     printf("Starting new task.");
     if (tasks_list == NULL) {
         return 1;
@@ -451,29 +458,34 @@ int run_task(tasks_list_t* tasks_list, pid_t pid, char*** envp) {
     }
     if (current_node == NULL) {
         pthread_mutex_unlock(&(tasks_list->list_access_mutex));
+        pthread_mutex_unlock(&list_access_mutex);
         return 1;
     }
     data_field_t* data_field = current_node->task->data_fields;
     switch (get_query_type(data_field->data)) {
         case ADD_TASK:
             if (add_task_query_handler(tasks_list, current_node, envp) != 0) {
-                destroy_node(tasks_list, current_node);
+                // destroy_node(tasks_list, current_node);
             }
             break;
         case LIST_TASKS:
             list_tasks_query_handler(tasks_list, current_node);
-            destroy_node(tasks_list, current_node);
+            // destroy_node(tasks_list, current_node);
             break;
         case REMOVE_TASK:
             remove_task_query_handler(tasks_list, current_node);
-            destroy_node(tasks_list, current_node);
+            // destroy_node(tasks_list, current_node);
             break;
         default:
-            destroy_node(tasks_list, current_node);
+            // destroy_node(tasks_list, current_node);
             pthread_mutex_unlock(&(tasks_list->list_access_mutex));
+            pthread_mutex_unlock(&list_access_mutex);
+
             return 2;
     }
     pthread_mutex_unlock(&(tasks_list->list_access_mutex));
+    pthread_mutex_unlock(&list_access_mutex);
+
     return 0;
 }
 
