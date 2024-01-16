@@ -22,6 +22,7 @@
 #include <pthread.h>
 #include <string.h>
 #include <signal.h>
+#include <spawn.h>
 
 // data types  //
 
