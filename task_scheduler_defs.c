@@ -262,7 +262,6 @@ static int send_data_to_client(tasks_list_t* tasks_list, mqd_t client_queue) {
 
 // task executed by thread called by timer.
 void* timer_thread_task(void* arg) {
-    // pthread_mutex_lock(&list_access_mutex);
     timer_function_data_t* data = (timer_function_data_t*)arg;
     pthread_mutex_lock(&(data->tasks_list->list_access_mutex));
     pid_t child_pid;
@@ -273,7 +272,6 @@ void* timer_thread_task(void* arg) {
     if (arguments == NULL) {
         remove_task_by_id(data->tasks_list, data->task->task->id);
         pthread_mutex_unlock(&(data->tasks_list->list_access_mutex));
-        // pthread_mutex_unlock(&list_access_mutex);
         return NULL;
     }
     char** safe_ptr = NULL;
@@ -287,7 +285,6 @@ void* timer_thread_task(void* arg) {
                 free(arguments);
                 remove_task_by_id(data->tasks_list, data->task->task->id);
                 pthread_mutex_unlock(&(data->tasks_list->list_access_mutex));
-                // pthread_mutex_unlock(&list_access_mutex);
                 return NULL;
             }
             arguments = safe_ptr;
@@ -301,7 +298,6 @@ void* timer_thread_task(void* arg) {
         free(arguments);
         remove_task_by_id(data->tasks_list, data->task->task->id);
         pthread_mutex_unlock(&(data->tasks_list->list_access_mutex));
-        // pthread_mutex_unlock(&list_access_mutex);
         return NULL;
     }
     arguments = safe_ptr;
@@ -311,15 +307,13 @@ void* timer_thread_task(void* arg) {
         free(arguments);
         remove_task_by_id(data->tasks_list, data->task->task->id);
         pthread_mutex_unlock(&(data->tasks_list->list_access_mutex));
-        // pthread_mutex_unlock(&list_access_mutex);
         return NULL;   
     }
     free(arguments);
     if (data->task->task->cyclic == 0) {
-        // remove_task_by_id(data->tasks_list, data->task->task->id);
+        remove_task_by_id(data->tasks_list, data->task->task->id);
     }
     pthread_mutex_unlock(&(data->tasks_list->list_access_mutex));
-    // pthread_mutex_unlock(&list_access_mutex);
     return NULL;
 }
 
@@ -355,7 +349,6 @@ static int remove_task_query_handler(tasks_list_t* tasks_list, task_list_node_t*
         data_field = data_field->next_field;
     }
     remove_task_by_id(tasks_list, removed_task_id);
-    printf("Task removed.\n");
     return 0;
 }
 
@@ -414,9 +407,13 @@ static int add_task_query_handler(tasks_list_t* tasks_list, task_list_node_t* ta
     timer_event.sigev_notify_attributes = NULL;
     timer_create(CLOCK_REALTIME, &timer_event, &(task->task->timer)); 
     
+    time_t nsec = 0;
+    if (time == 0 && repeat_time == 0) {
+        nsec = 1;
+    }
     struct itimerspec tispec;
     tispec.it_value.tv_sec = time;
-    tispec.it_value.tv_nsec = 0;
+    tispec.it_value.tv_nsec = nsec;
     tispec.it_interval.tv_sec = repeat_time;
     tispec.it_interval.tv_nsec = 0;
     if(time_type == 0) {
@@ -444,6 +441,7 @@ static int list_tasks_query_handler(tasks_list_t* tasks_list, task_list_node_t* 
         return 1;
     }
     if (send_data_to_client(tasks_list, client_queue) != 0) {
+        mq_close(client_queue);
         return 1;
     }
     mq_close(client_queue);
@@ -452,9 +450,6 @@ static int list_tasks_query_handler(tasks_list_t* tasks_list, task_list_node_t* 
 
 // Sets up and runs task.
 int run_task(tasks_list_t* tasks_list, pid_t pid, char*** envp) {
-    // pthread_mutex_lock(&list_access_mutex);
-
-    printf("Starting new task.");
     if (tasks_list == NULL) {
         return 1;
     }
@@ -468,34 +463,29 @@ int run_task(tasks_list_t* tasks_list, pid_t pid, char*** envp) {
     }
     if (current_node == NULL) {
         pthread_mutex_unlock(&(tasks_list->list_access_mutex));
-        // pthread_mutex_unlock(&list_access_mutex);
         return 1;
     }
     data_field_t* data_field = current_node->task->data_fields;
     switch (get_query_type(data_field->data)) {
         case ADD_TASK:
             if (add_task_query_handler(tasks_list, current_node, envp) != 0) {
-                // destroy_node(tasks_list, current_node);
+                destroy_node(tasks_list, current_node);
             }
             break;
         case LIST_TASKS:
             list_tasks_query_handler(tasks_list, current_node);
-            // destroy_node(tasks_list, current_node);
+            destroy_node(tasks_list, current_node);
             break;
         case REMOVE_TASK:
             remove_task_query_handler(tasks_list, current_node);
-            // destroy_node(tasks_list, current_node);
+            destroy_node(tasks_list, current_node);
             break;
         default:
-            // destroy_node(tasks_list, current_node);
+            destroy_node(tasks_list, current_node);
             pthread_mutex_unlock(&(tasks_list->list_access_mutex));
-            // pthread_mutex_unlock(&list_access_mutex);
-
             return 2;
     }
     pthread_mutex_unlock(&(tasks_list->list_access_mutex));
-    // pthread_mutex_unlock(&list_access_mutex);
-
     return 0;
 }
 
