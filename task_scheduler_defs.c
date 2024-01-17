@@ -1,5 +1,7 @@
 #include "task_scheduler.h"
+#include "app_state_logger.h"
 
+static int do_logs_flag = 0;
 
 ///////////////////////////
 // functions definitions //
@@ -11,7 +13,7 @@
 
 
 // Initialize tasks linked list.
-int task_list_init(tasks_list_t** tasks_list) {
+int task_list_init(tasks_list_t** tasks_list, int do_logs) {
     if (*tasks_list != NULL) { // list was already initialized.
         return 1;
     }
@@ -22,6 +24,10 @@ int task_list_init(tasks_list_t** tasks_list) {
     (*tasks_list)->head = NULL;
     (*tasks_list)->tail = NULL;
     (*tasks_list)->max_id = 0;
+    do_logs_flag = do_logs;
+    if (do_logs == 1) {
+        initialize_logger();
+    }
     pthread_mutex_init(&((*tasks_list)->list_access_mutex), NULL);
     return 0;
 }
@@ -75,7 +81,7 @@ void tasks_list_destroy(tasks_list_t* tasks_list) {
         destroy_task(current_node->task);
         free(current_node);
         current_node = next_node;
-    }   
+    }
     pthread_mutex_destroy(&(tasks_list->list_access_mutex));
     free(tasks_list);
 }
@@ -191,6 +197,30 @@ static int remove_task_by_id(tasks_list_t* tasks_list, unsigned long id) {
 //////////////////////////////
 
 
+// Function for creating logs.
+static void create_log(char* command) {
+    if (do_logs_flag == 0) {
+        return;
+    }
+    time_t t;
+    time(&t);
+    struct tm *tm_info;
+    tm_info = localtime(&t);
+    unsigned long log_length = 21 + strlen(command);
+    char* log = malloc(log_length * sizeof(char));
+    if (log == NULL) {
+        return;
+    }
+    strftime(log, 21, "%Y-%m-%d %H:%M:%S ", tm_info);
+    strcat(log, command);
+    write_to_login_file(log, STANDARD);
+}
+
+
+/////////////////////////////
+// logs functions          //
+/////////////////////////////
+
 // Send program arguments to server.
 int queue_send_arguments(int argc, char* argv[], mqd_t message_queue) {
     transfer_object_t transfer_object;
@@ -248,7 +278,7 @@ static int send_data_to_client(tasks_list_t* tasks_list, mqd_t client_queue) {
             }
             data_field = data_field->next_field;
         }
-        
+
         current_node = current_node->next;
     }
     transfer_object.content[0] = '\0';
@@ -305,7 +335,7 @@ void* timer_thread_task(void* arg) {
         free(arguments);
         remove_task_by_id(data->tasks_list, data->task->task->id);
         pthread_mutex_unlock(&(data->tasks_list->list_access_mutex));
-        return NULL;   
+        return NULL;
     }
     free(arguments);
     if (data->task->task->cyclic == 0) {
@@ -329,6 +359,8 @@ static int remove_task_query_handler(tasks_list_t* tasks_list, task_list_node_t*
     data_field_t* data_field = task->task->data_fields;
     unsigned long removed_task_id = 0;
     char read_fields = 0;
+    unsigned long log_length = strlen("Finished command: -rm ");
+    data_field_t* log_data_field = NULL;
     while (data_field != NULL) {
         if (read_fields >= 2) {
             return 1;
@@ -342,9 +374,19 @@ static int remove_task_query_handler(tasks_list_t* tasks_list, task_list_node_t*
             if (removed_task_id == 0) {
                 return 1;
             }
+            log_length += strlen(data_field->data);
+            log_data_field = data_field;
         }
         ++read_fields;
         data_field = data_field->next_field;
+    }
+    if (do_logs_flag == 1) {
+        char* message = malloc((log_length + 1) * sizeof(char));
+        if(message != NULL) {
+            sprintf(message, "%s%s", "Finished command: -rm ", log_data_field->data);
+            create_log(message);
+            free(message);
+        }
     }
     remove_task_by_id(tasks_list, removed_task_id);
     return 0;
@@ -403,8 +445,8 @@ static int add_task_query_handler(tasks_list_t* tasks_list, task_list_node_t* ta
     timer_event.sigev_notify_function = timer_thread_task;
     timer_event.sigev_value.sival_ptr = &timer_data;
     timer_event.sigev_notify_attributes = NULL;
-    timer_create(CLOCK_REALTIME, &timer_event, &(task->task->timer)); 
-    
+    timer_create(CLOCK_REALTIME, &timer_event, &(task->task->timer));
+
     time_t nsec = 0;
     if (time == 0 && repeat_time == 0) {
         nsec = 1;
@@ -442,6 +484,7 @@ static int list_tasks_query_handler(tasks_list_t* tasks_list, task_list_node_t* 
         mq_close(client_queue);
         return 1;
     }
+    create_log("Finished command: -ls");
     mq_close(client_queue);
     return 0;
 }
@@ -530,7 +573,7 @@ int is_iso8601_date(char* string) {
                 if (*(string + counter) != ':') {
                     return 0;
                 }
-                break;            
+                break;
             default:
                 if ((*(string + counter) < '0') || (*(string + counter) > '9')) {
                     return 0;
