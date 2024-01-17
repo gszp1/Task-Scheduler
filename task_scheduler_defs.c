@@ -444,7 +444,6 @@ static int list_tasks_query_handler(tasks_list_t* tasks_list, task_list_node_t* 
         mq_close(client_queue);
         return 1;
     }
-    create_log("Finished command: -ls");
     mq_close(client_queue);
     return 0;
 }
