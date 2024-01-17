@@ -1,7 +1,5 @@
 #include "task_scheduler.h"
 
-// static pthread_mutex_t list_access_mutex = PTHREAD_MUTEX_INITIALIZER;
-
 
 ///////////////////////////
 // functions definitions //
