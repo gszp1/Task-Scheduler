@@ -542,6 +542,7 @@ int run_task(tasks_list_t* tasks_list, pid_t pid, char*** envp) {
         return 1;
     }
     data_field_t* data_field = current_node->task->data_fields;
+    
     switch (get_query_type(data_field->data)) {
         case ADD_TASK:
             if (add_task_query_handler(tasks_list, current_node, envp) != 0) {
@@ -572,6 +573,9 @@ int run_task(tasks_list_t* tasks_list, pid_t pid, char*** envp) {
 
 // Checks if given string is a flag.
 int get_query_type(char* flag) {
+    if (flag == NULL) {
+        return 0;
+    }
     if (strcmp(flag, "-a") == 0) {
         return ADD_TASK;
     }
