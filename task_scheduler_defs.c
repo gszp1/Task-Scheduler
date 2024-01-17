@@ -225,14 +225,22 @@ static char* create_log_contents(task_t* task, char* entry_text) {
     if (content == NULL) {
         return entry_text;
     }
+    char* safe_ptr = NULL;
     strcpy(content, entry_text);
     data_field_t* data_field = task->data_fields;
     while (data_field != NULL) {
         length += strlen(data_field->data) + 1;
+        safe_ptr = realloc(content, length * sizeof(char));
+        if (safe_ptr == NULL) {
+            free(safe_ptr);
+            free(content);
+            return entry_text;
+        }
+        content = safe_ptr;
+        strcat(content, " ");
+        strcat(content, data_field->data);
+        data_field = data_field->next_field;
     }
-
-    
-
     return content;
 }
 
