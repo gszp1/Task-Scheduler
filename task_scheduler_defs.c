@@ -339,7 +339,8 @@ void* timer_thread_task(void* arg) {
     unsigned long number_of_arguments = 0;
     char** arguments = malloc(sizeof(char*));
     if (arguments == NULL) {
-        remove_task_by_id(data->tasks_list, data->task->task->id);
+        write_log(data->task->task, "Failed to start task:");
+        destroy_node(data->tasks_list, data->task);
         pthread_mutex_unlock(&(data->tasks_list->list_access_mutex));
         return NULL;
     }
@@ -352,7 +353,8 @@ void* timer_thread_task(void* arg) {
             if (arguments == NULL) {
                 free(safe_ptr);
                 free(arguments);
-                remove_task_by_id(data->tasks_list, data->task->task->id);
+                write_log(data->task->task, "Failed to start task:");
+                destroy_node(data->tasks_list, data->task);
                 pthread_mutex_unlock(&(data->tasks_list->list_access_mutex));
                 return NULL;
             }
@@ -365,7 +367,8 @@ void* timer_thread_task(void* arg) {
     if (arguments == NULL) {
         free(safe_ptr);
         free(arguments);
-        remove_task_by_id(data->tasks_list, data->task->task->id);
+        write_log(data->task->task, "Failed to start task:");
+        destroy_node(data->tasks_list, data->task);
         pthread_mutex_unlock(&(data->tasks_list->list_access_mutex));
         return NULL;
     }
@@ -374,13 +377,15 @@ void* timer_thread_task(void* arg) {
 
     if (posix_spawnp(&child_pid, *arguments, NULL, NULL, arguments, *(data->envp)) != 0) {
         free(arguments);
-        remove_task_by_id(data->tasks_list, data->task->task->id);
+        write_log(data->task->task, "Failed to start task:");
+        destroy_node(data->tasks_list, data->task);
         pthread_mutex_unlock(&(data->tasks_list->list_access_mutex));
         return NULL;   
     }
     free(arguments);
     if (data->task->task->cyclic == 0) {
-        remove_task_by_id(data->tasks_list, data->task->task->id);
+        write_log(data->task->task, "Removed task:");
+        destroy_node(data->tasks_list, data->task);
     }
     pthread_mutex_unlock(&(data->tasks_list->list_access_mutex));
     return NULL;
@@ -421,13 +426,7 @@ static int remove_task_query_handler(tasks_list_t* tasks_list, task_list_node_t*
         ++read_fields;
         data_field = data_field->next_field;
     }
-    char* log_contents = create_log_contents(task->task, "Finished task:");
-    if (log_contents == NULL) {
-        create_log("Finished task -rm.");        
-    } else {
-        create_log(log_contents);
-        free(log_contents);
-    }
+    write_log(task->task, "Finished task:");
     remove_task_by_id(tasks_list, removed_task_id);
     return 0;
 }
@@ -502,13 +501,7 @@ static int add_task_query_handler(tasks_list_t* tasks_list, task_list_node_t* ta
         timer_settime(task->task->timer, TIMER_ABSTIME, &tispec, NULL);
     }
     task->task->task_status = ACTIVE;
-    char* message = create_log_contents(task->task, "Finished starting task:");
-    if (message == NULL) {
-        create_log("Finished starting task.");        
-    } else {
-        create_log(message);
-        free(message);
-    }
+    write_log(task->task, "Finished starting task:");
     return 0;
 }
 
@@ -528,10 +521,11 @@ static int list_tasks_query_handler(tasks_list_t* tasks_list, task_list_node_t* 
         return 1;
     }
     if (send_data_to_client(tasks_list, client_queue) != 0) {
+        write_log(task->task, "Failed task:");
         mq_close(client_queue);
         return 1;
     }
-    create_log("Finished command: -ls");
+    write_log(task->task, "Finished task:");
     mq_close(client_queue);
     return 0;
 }
@@ -553,29 +547,27 @@ int run_task(tasks_list_t* tasks_list, pid_t pid, char*** envp) {
         pthread_mutex_unlock(&(tasks_list->list_access_mutex));
         return 1;
     }
-    char* log_message = create_log_contents(current_node->task, "Starting task:");
-    if (log_message == NULL) {
-        create_log("Starting task:");
-    } else {
-        create_log(log_message);
-        free(log_message);
-    }
+    write_log(current_node->task, "Starting task:");
     data_field_t* data_field = current_node->task->data_fields;
     switch (get_query_type(data_field->data)) {
         case ADD_TASK:
             if (add_task_query_handler(tasks_list, current_node, envp) != 0) {
+                write_log(current_node->task, "Removed task:");
                 destroy_node(tasks_list, current_node);
             }
             break;
         case LIST_TASKS:
             list_tasks_query_handler(tasks_list, current_node);
+            write_log(current_node->task, "Removed task:");
             destroy_node(tasks_list, current_node);
             break;
         case REMOVE_TASK:
             remove_task_query_handler(tasks_list, current_node);
+            write_log(current_node->task, "Removed task:");
             destroy_node(tasks_list, current_node);
             break;
         default:
+            write_log(current_node->task, "Removed task:");
             destroy_node(tasks_list, current_node);
             pthread_mutex_unlock(&(tasks_list->list_access_mutex));
             return 2;
