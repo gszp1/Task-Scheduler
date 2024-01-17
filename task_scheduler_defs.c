@@ -408,13 +408,12 @@ static int remove_task_query_handler(tasks_list_t* tasks_list, task_list_node_t*
         ++read_fields;
         data_field = data_field->next_field;
     }
-    if (do_logs_flag == 1) {
-        char* message = malloc((log_length + 1) * sizeof(char));
-        if(message != NULL) {
-            sprintf(message, "%s%s", "Finished command: -rm ", log_data_field->data);
-            create_log(message);
-            free(message);
-        }
+    char* log_contents = create_log_contents(task->task, "Finished task:");
+    if (log_contents == NULL) {
+        create_log("Finished task -rm.");        
+    } else {
+        create_log(log_contents);
+        free(log_contents);
     }
     remove_task_by_id(tasks_list, removed_task_id);
     return 0;
@@ -576,6 +575,7 @@ int run_task(tasks_list_t* tasks_list, pid_t pid, char*** envp) {
 ////////////////////
 // misc functions //
 ///////////////////
+
 
 // Checks if given string is a flag.
 int get_query_type(char* flag) {
