@@ -587,6 +587,7 @@ time_t convert_string_to_seconds(char* string) {
     return time;
 }
 
+// Function for creating logs.
 static void create_log(char* command) {
     if (do_logs_flag == 0) {
         return;
