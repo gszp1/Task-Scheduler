@@ -218,12 +218,12 @@ static void create_log(char* command) {
 
 static char* create_log_contents(task_t* task, char* entry_text) {
     if (task == NULL || do_logs_flag == 0) {
-        return entry_text;
+        return NULL;
     }
     unsigned long length = (strlen(entry_text) + 1);
     char* content = malloc(length * sizeof(char));
     if (content == NULL) {
-        return entry_text;
+        return NULL;
     }
     char* safe_ptr = NULL;
     strcpy(content, entry_text);
@@ -234,7 +234,7 @@ static char* create_log_contents(task_t* task, char* entry_text) {
         if (safe_ptr == NULL) {
             free(safe_ptr);
             free(content);
-            return entry_text;
+            return NULL;
         }
         content = safe_ptr;
         strcat(content, " ");
@@ -490,6 +490,13 @@ static int add_task_query_handler(tasks_list_t* tasks_list, task_list_node_t* ta
         timer_settime(task->task->timer, TIMER_ABSTIME, &tispec, NULL);
     }
     task->task->task_status = ACTIVE;
+    char* message = create_log_contents(task->task, "Finished starting task:");
+    if (message == NULL) {
+        create_log("Finished starting task.");        
+    } else {
+        create_log(message);
+        free(message);
+    }
     return 0;
 }
 
