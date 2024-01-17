@@ -216,6 +216,26 @@ static void create_log(char* command) {
     write_to_login_file(log, STANDARD);
 }
 
+static char* create_log_contents(task_t* task, char* entry_text) {
+    if (task == NULL || do_logs_flag == 0) {
+        return entry_text;
+    }
+    unsigned long length = (strlen(entry_text) + 1);
+    char* content = malloc(length * sizeof(char));
+    if (content == NULL) {
+        return entry_text;
+    }
+    strcpy(content, entry_text);
+    data_field_t* data_field = task->data_fields;
+    while (data_field != NULL) {
+        length += strlen(data_field->data) + 1;
+    }
+
+    
+
+    return content;
+}
+
 
 /////////////////////////////
 // logs functions          //
