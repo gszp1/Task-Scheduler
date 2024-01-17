@@ -1,4 +1,7 @@
 #include "task_scheduler.h"
+#include "app_state_logger.h"
+
+static int do_logs_flag = 0;
 
 ///////////////////////////
 // functions definitions //
@@ -10,7 +13,7 @@
 
 
 // Initialize tasks linked list.
-int task_list_init(tasks_list_t** tasks_list) {
+int task_list_init(tasks_list_t** tasks_list, int do_logs) {
     if (*tasks_list != NULL) { // list was already initialized.
         return 1;
     }
@@ -21,6 +24,10 @@ int task_list_init(tasks_list_t** tasks_list) {
     (*tasks_list)->head = NULL;
     (*tasks_list)->tail = NULL;
     (*tasks_list)->max_id = 0;
+    do_logs_flag = do_logs;
+    if (do_logs == 1) {
+        initialize_logger();
+    }
     pthread_mutex_init(&((*tasks_list)->list_access_mutex), NULL);
     return 0;
 }
@@ -189,6 +196,71 @@ static int remove_task_by_id(tasks_list_t* tasks_list, unsigned long id) {
 // task processing functions //
 //////////////////////////////
 
+// Function for creating logs.
+static void create_log(char* command) {
+    if (do_logs_flag == 0) {
+        return;
+    }
+    time_t t;
+    time(&t);
+    struct tm *tm_info;
+    tm_info = localtime(&t);
+    unsigned long log_length = 21 + strlen(command);
+    char* log = malloc(log_length * sizeof(char));
+    if (log == NULL) {
+        return;
+    }
+    strftime(log, 21, "%Y-%m-%d %H:%M:%S ", tm_info);
+    strcat(log, command);
+    write_to_login_file(log, STANDARD);
+}
+
+static char* create_log_contents(task_t* task, char* entry_text) {
+    if (task == NULL || do_logs_flag == 0) {
+        return NULL;
+    }
+    unsigned long length = (strlen(entry_text) + 1);
+    char* content = malloc(length * sizeof(char));
+    if (content == NULL) {
+        return NULL;
+    }
+    char* safe_ptr = NULL;
+    strcpy(content, entry_text);
+    data_field_t* data_field = task->data_fields;
+    while (data_field != NULL) {
+        length += strlen(data_field->data) + 1;
+        safe_ptr = realloc(content, length * sizeof(char));
+        if (safe_ptr == NULL) {
+            free(safe_ptr);
+            free(content);
+            return NULL;
+        }
+        content = safe_ptr;
+        strcat(content, " ");
+        strcat(content, data_field->data);
+        data_field = data_field->next_field;
+    }
+    return content;
+}
+
+static void write_log(task_t* task, char* log_message) {
+    if (log_message == NULL) {
+        return;
+    }
+    char* log_contents = create_log_contents(task, log_message);
+    if (log_contents == NULL) {
+        create_log(log_message);        
+    } else {
+        create_log(log_contents);
+        free(log_contents);
+    }
+}
+
+
+/////////////////////////////
+// logs functions          //
+/////////////////////////////
+
 // Send program arguments to server.
 int queue_send_arguments(int argc, char* argv[], mqd_t message_queue) {
     transfer_object_t transfer_object;
@@ -266,7 +338,8 @@ void* timer_thread_task(void* arg) {
     unsigned long number_of_arguments = 0;
     char** arguments = malloc(sizeof(char*));
     if (arguments == NULL) {
-        remove_task_by_id(data->tasks_list, data->task->task->id);
+        write_log(data->task->task, "Failed to start task:");
+        destroy_node(data->tasks_list, data->task);
         pthread_mutex_unlock(&(data->tasks_list->list_access_mutex));
         return NULL;
     }
@@ -279,7 +352,8 @@ void* timer_thread_task(void* arg) {
             if (arguments == NULL) {
                 free(safe_ptr);
                 free(arguments);
-                remove_task_by_id(data->tasks_list, data->task->task->id);
+                write_log(data->task->task, "Failed to start task:");
+                destroy_node(data->tasks_list, data->task);
                 pthread_mutex_unlock(&(data->tasks_list->list_access_mutex));
                 return NULL;
             }
@@ -292,7 +366,8 @@ void* timer_thread_task(void* arg) {
     if (arguments == NULL) {
         free(safe_ptr);
         free(arguments);
-        remove_task_by_id(data->tasks_list, data->task->task->id);
+        write_log(data->task->task, "Failed to start task:");
+        destroy_node(data->tasks_list, data->task);
         pthread_mutex_unlock(&(data->tasks_list->list_access_mutex));
         return NULL;
     }
@@ -301,13 +376,15 @@ void* timer_thread_task(void* arg) {
 
     if (posix_spawnp(&child_pid, *arguments, NULL, NULL, arguments, *(data->envp)) != 0) {
         free(arguments);
-        remove_task_by_id(data->tasks_list, data->task->task->id);
+        write_log(data->task->task, "Failed to start task:");
+        destroy_node(data->tasks_list, data->task);
         pthread_mutex_unlock(&(data->tasks_list->list_access_mutex));
         return NULL;
     }
     free(arguments);
     if (data->task->task->cyclic == 0) {
-        remove_task_by_id(data->tasks_list, data->task->task->id);
+        write_log(data->task->task, "Removed task:");
+        destroy_node(data->tasks_list, data->task);
     }
     pthread_mutex_unlock(&(data->tasks_list->list_access_mutex));
     return NULL;
@@ -348,6 +425,7 @@ static int remove_task_query_handler(tasks_list_t* tasks_list, task_list_node_t*
         ++read_fields;
         data_field = data_field->next_field;
     }
+    write_log(task->task, "Finished task:");
     remove_task_by_id(tasks_list, removed_task_id);
     return 0;
 }
@@ -422,6 +500,7 @@ static int add_task_query_handler(tasks_list_t* tasks_list, task_list_node_t* ta
         timer_settime(task->task->timer, TIMER_ABSTIME, &tispec, NULL);
     }
     task->task->task_status = ACTIVE;
+    write_log(task->task, "Finished starting task:");
     return 0;
 }
 
@@ -441,9 +520,11 @@ static int list_tasks_query_handler(tasks_list_t* tasks_list, task_list_node_t* 
         return 1;
     }
     if (send_data_to_client(tasks_list, client_queue) != 0) {
+        write_log(task->task, "Failed task:");
         mq_close(client_queue);
         return 1;
     }
+    write_log(task->task, "Finished task:");
     mq_close(client_queue);
     return 0;
 }
@@ -465,22 +546,27 @@ int run_task(tasks_list_t* tasks_list, pid_t pid, char*** envp) {
         pthread_mutex_unlock(&(tasks_list->list_access_mutex));
         return 1;
     }
+    write_log(current_node->task, "Starting task:");
     data_field_t* data_field = current_node->task->data_fields;
     switch (get_query_type(data_field->data)) {
         case ADD_TASK:
             if (add_task_query_handler(tasks_list, current_node, envp) != 0) {
+                write_log(current_node->task, "Removed task:");
                 destroy_node(tasks_list, current_node);
             }
             break;
         case LIST_TASKS:
             list_tasks_query_handler(tasks_list, current_node);
+            write_log(current_node->task, "Removed task:");
             destroy_node(tasks_list, current_node);
             break;
         case REMOVE_TASK:
             remove_task_query_handler(tasks_list, current_node);
+            write_log(current_node->task, "Removed task:");
             destroy_node(tasks_list, current_node);
             break;
         default:
+            write_log(current_node->task, "Removed task:");
             destroy_node(tasks_list, current_node);
             pthread_mutex_unlock(&(tasks_list->list_access_mutex));
             return 2;
@@ -494,8 +580,12 @@ int run_task(tasks_list_t* tasks_list, pid_t pid, char*** envp) {
 // misc functions //
 ///////////////////
 
+
 // Checks if given string is a flag.
 int get_query_type(char* flag) {
+    if (flag == NULL) {
+        return 0;
+    }
     if (strcmp(flag, "-a") == 0) {
         return ADD_TASK;
     }
