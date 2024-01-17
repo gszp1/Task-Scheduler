@@ -586,3 +586,21 @@ time_t convert_string_to_seconds(char* string) {
     }
     return time;
 }
+
+static void create_log(char* command) {
+    if (do_logs_flag == 0) {
+        return;
+    }
+    time_t t;
+    time(&t);
+    struct tm *tm_info;
+    tm_info = localtime(&t);
+    unsigned long log_length = 21 + strlen(command);
+    char* log = malloc(log_length * sizeof(char));
+    if (log == NULL) {
+        return;
+    }
+    strftime(log, 21, "%Y-%m-%d %H:%M:%S ", tm_info);
+    strcat(log, command);
+    write_to_login_file(log, STANDARD);
+}
