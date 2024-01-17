@@ -1,4 +1,5 @@
 #include "task_scheduler.h"
+#include "app_state_logger.h"
 
 static int do_logs_flag = 0;
 
@@ -24,6 +25,9 @@ int task_list_init(tasks_list_t** tasks_list, int do_logs) {
     (*tasks_list)->tail = NULL;
     (*tasks_list)->max_id = 0;
     do_logs_flag = do_logs;
+    if (do_logs == 1) {
+        initialize_logger();
+    }
     pthread_mutex_init(&((*tasks_list)->list_access_mutex), NULL);
     return 0;
 }
