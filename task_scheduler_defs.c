@@ -1,6 +1,16 @@
 #include "task_scheduler.h"
 
+// static pthread_mutex_t list_access_mutex = PTHREAD_MUTEX_INITIALIZER;
+
+
+///////////////////////////
 // functions definitions //
+//////////////////////////
+
+////////////////////////////////////////
+// linked list manipulation functions //
+///////////////////////////////////////
+
 
 // Initialize tasks linked list.
 int task_list_init(tasks_list_t** tasks_list) {
@@ -18,35 +28,17 @@ int task_list_init(tasks_list_t** tasks_list) {
     return 0;
 }
 
-// Destroy tasks linked list.
-void tasks_list_destroy(tasks_list_t* tasks_list) {
-    if (tasks_list == NULL) {
-        return;
-    }
-    // todo: remove nodes and all resources allocated by them.
-    task_list_node_t* current_node = tasks_list->head;
-    task_list_node_t* next_node = NULL;
-    while (current_node != NULL) {
-        next_node = current_node->next;
-        destroy_task(current_node->task);
-        free(current_node);
-        current_node = next_node;
-    }   
-    pthread_mutex_destroy(&(tasks_list->list_access_mutex));
-    free(tasks_list);
-}
-
 // frees resources used by task
 void destroy_task(task_t* task) {
     data_field_t* data_field = task->data_fields;
     data_field_t* next_field = NULL;
+    if (task->task_status == ACTIVE) {
+        timer_delete(task->timer);
+    }
     while (data_field != NULL) {
         next_field = data_field->next_field;
         free(data_field);
         data_field = next_field;
-    }
-    if (task->task_status == ACTIVE) {
-        timer_delete(task->timer);
     }
     free(task);
 }
@@ -73,62 +65,54 @@ void destroy_node(tasks_list_t* tasks_list, task_list_node_t* node) {
     free(node);
 }
 
-// Send program arguments to server.
-int queue_send_arguments(int argc, char* argv[], mqd_t message_queue) {
-    transfer_object_t transfer_object;
-    transfer_object.pid = getpid();
-    for (int i = 1; i < argc; ++i) {
-        int counter = 0;
-        while (argv[i][counter] != '\0' && counter < MAX_ARGUMENT_SIZE) {
-            transfer_object.content[counter] = argv[i][counter];
-            ++counter;
-        }
-        transfer_object.content[counter] = '\0';
-        if (mq_send(message_queue, (char*)(&transfer_object), sizeof(transfer_object_t), 0) == -1) {
-            return 1;
-        }
+// Destroy tasks linked list.
+void tasks_list_destroy(tasks_list_t* tasks_list) {
+    if (tasks_list == NULL) {
+        return;
     }
-    transfer_object.content[0] = '\0';
-    return mq_send(message_queue, (char*)(&transfer_object), sizeof(transfer_object_t), 0);
+    task_list_node_t* current_node = tasks_list->head;
+    task_list_node_t* next_node = NULL;
+    while (current_node != NULL) {
+        next_node = current_node->next;
+        destroy_task(current_node->task);
+        free(current_node);
+        current_node = next_node;
+    }   
+    pthread_mutex_destroy(&(tasks_list->list_access_mutex));
+    free(tasks_list);
 }
 
-// Checks if given string is a flag.
-int get_query_type(char* flag) {
-    if (strcmp(flag, "-a") == 0) {
-        return ADD_TASK;
+// Creates new task.
+task_t* create_new_task(char* field, pid_t pid) {
+    task_t* new_task = malloc(sizeof(task_t));
+    if (new_task == NULL) {
+        return NULL;
     }
-    if (strcmp(flag, "-rm") == 0) {
-        return REMOVE_TASK;
+    new_task->pid = pid;
+    new_task->number_of_fields = 1;
+    data_field_t* data_field = malloc(sizeof(data_field_t));
+    if (data_field == NULL) {
+        free(new_task);
+        return NULL;
     }
-    if (strcmp(flag, "-ls") == 0) {
-        return LIST_TASKS;
-    }
-    return 0;
+    data_field->next_field = NULL;
+    strcpy(data_field->data, field);
+    new_task->data_fields = data_field;
+    return new_task;
 }
 
-// Adds task to tasks list.
-int add_task(task_t* task, tasks_list_t* tasks_list) {
-    task_list_node_t* new_node = malloc(sizeof(task_list_node_t));
-    if (new_node == NULL) {
-        return 1;
+// Creates new data field.
+data_field_t* create_data_field(char* data, pid_t pid) {
+    if (data == NULL) {
+        return NULL;
     }
-    new_node->task = task;
-    new_node->next = NULL;
-    pthread_mutex_lock(&(tasks_list->list_access_mutex));
-    new_node->prev = tasks_list->tail;
-    if (tasks_list->tail != NULL) {
-        tasks_list->tail->next = new_node;
+    data_field_t* new_data_field = malloc(sizeof(data_field_t));
+    if (new_data_field == NULL) {
+        return NULL;
     }
-    tasks_list->tail = new_node;
-    if (tasks_list->head == NULL) {
-        tasks_list->head = new_node;
-    }
-    (tasks_list->max_id)++;
-    task->id = tasks_list->max_id;
-    task->task_status = DISABLED;
-    task->cyclic = 0;
-    pthread_mutex_unlock(&(tasks_list->list_access_mutex));
-    return 0;
+    new_data_field->next_field = NULL;
+    strcpy(new_data_field->data, data);
+    return new_data_field;
 }
 
 // Adds data field read from queue to task.
@@ -162,30 +146,29 @@ int add_data_to_task(tasks_list_t* tasks_list, pid_t pid, data_field_t* data_fie
     return 0;
 }
 
-// Creates new task.
-task_t* create_new_task(char* field, pid_t pid) {
-    task_t* new_task = malloc(sizeof(task_t));
-    new_task->pid = pid;
-    new_task->number_of_fields = 1;
-    data_field_t* data_field = malloc(sizeof(data_field_t));
-    data_field->next_field = NULL;
-    strcpy(data_field->data, field);
-    new_task->data_fields = data_field;
-    return new_task;
-}
-
-// Creates new data field.
-data_field_t* create_data_field(char* data, pid_t pid) {
-    if (data == NULL) {
-        return NULL;
+// Adds task to tasks list.
+int add_task(task_t* task, tasks_list_t* tasks_list) {
+    task_list_node_t* new_node = malloc(sizeof(task_list_node_t));
+    if (new_node == NULL) {
+        return 1;
     }
-    data_field_t* new_data_field = malloc(sizeof(data_field_t));
-    if (new_data_field == NULL) {
-        return NULL;
+    new_node->task = task;
+    new_node->next = NULL;
+    pthread_mutex_lock(&(tasks_list->list_access_mutex));
+    new_node->prev = tasks_list->tail;
+    if (tasks_list->tail != NULL) {
+        tasks_list->tail->next = new_node;
     }
-    new_data_field->next_field = NULL;
-    strcpy(new_data_field->data, data);
-    return new_data_field;
+    tasks_list->tail = new_node;
+    if (tasks_list->head == NULL) {
+        tasks_list->head = new_node;
+    }
+    (tasks_list->max_id)++;
+    task->id = tasks_list->max_id;
+    task->task_status = DISABLED;
+    task->cyclic = 0;
+    pthread_mutex_unlock(&(tasks_list->list_access_mutex));
+    return 0;
 }
 
 // Removes task with given ID.
@@ -202,6 +185,31 @@ static int remove_task_by_id(tasks_list_t* tasks_list, unsigned long id) {
         current_node = current_node->next;
     }
     return 0;
+}
+
+
+///////////////////////////////
+// task processing functions //
+//////////////////////////////
+
+
+// Send program arguments to server.
+int queue_send_arguments(int argc, char* argv[], mqd_t message_queue) {
+    transfer_object_t transfer_object;
+    transfer_object.pid = getpid();
+    for (int i = 1; i < argc; ++i) {
+        int counter = 0;
+        while (argv[i][counter] != '\0' && counter < MAX_ARGUMENT_SIZE) {
+            transfer_object.content[counter] = argv[i][counter];
+            ++counter;
+        }
+        transfer_object.content[counter] = '\0';
+        if (mq_send(message_queue, (char*)(&transfer_object), sizeof(transfer_object_t), 0) == -1) {
+            return 1;
+        }
+    }
+    transfer_object.content[0] = '\0';
+    return mq_send(message_queue, (char*)(&transfer_object), sizeof(transfer_object_t), 0);
 }
 
 // Function for sending data to client through queue.
@@ -306,11 +314,14 @@ void* timer_thread_task(void* arg) {
         remove_task_by_id(data->tasks_list, data->task->task->id);
     }
     pthread_mutex_unlock(&(data->tasks_list->list_access_mutex));
-
     return NULL;
 }
 
+
+//////////////////////
 // message handlers //
+/////////////////////
+
 
 // Handler for task removal query
 static int remove_task_query_handler(tasks_list_t* tasks_list, task_list_node_t* task) {
@@ -338,7 +349,6 @@ static int remove_task_query_handler(tasks_list_t* tasks_list, task_list_node_t*
         data_field = data_field->next_field;
     }
     remove_task_by_id(tasks_list, removed_task_id);
-    printf("Task removed.\n");
     return 0;
 }
 
@@ -397,9 +407,13 @@ static int add_task_query_handler(tasks_list_t* tasks_list, task_list_node_t* ta
     timer_event.sigev_notify_attributes = NULL;
     timer_create(CLOCK_REALTIME, &timer_event, &(task->task->timer)); 
     
+    time_t nsec = 0;
+    if (time == 0 && repeat_time == 0) {
+        nsec = 1;
+    }
     struct itimerspec tispec;
     tispec.it_value.tv_sec = time;
-    tispec.it_value.tv_nsec = 0;
+    tispec.it_value.tv_nsec = nsec;
     tispec.it_interval.tv_sec = repeat_time;
     tispec.it_interval.tv_nsec = 0;
     if(time_type == 0) {
@@ -427,6 +441,7 @@ static int list_tasks_query_handler(tasks_list_t* tasks_list, task_list_node_t* 
         return 1;
     }
     if (send_data_to_client(tasks_list, client_queue) != 0) {
+        mq_close(client_queue);
         return 1;
     }
     mq_close(client_queue);
@@ -435,7 +450,6 @@ static int list_tasks_query_handler(tasks_list_t* tasks_list, task_list_node_t* 
 
 // Sets up and runs task.
 int run_task(tasks_list_t* tasks_list, pid_t pid, char*** envp) {
-    printf("Starting new task.");
     if (tasks_list == NULL) {
         return 1;
     }
@@ -475,7 +489,24 @@ int run_task(tasks_list_t* tasks_list, pid_t pid, char*** envp) {
     return 0;
 }
 
+
+////////////////////
 // misc functions //
+///////////////////
+
+// Checks if given string is a flag.
+int get_query_type(char* flag) {
+    if (strcmp(flag, "-a") == 0) {
+        return ADD_TASK;
+    }
+    if (strcmp(flag, "-rm") == 0) {
+        return REMOVE_TASK;
+    }
+    if (strcmp(flag, "-ls") == 0) {
+        return LIST_TASKS;
+    }
+    return 0;
+}
 
 // Checks if date stored in string is ISO 8601 compliant. YYYY-MM-DDThh:mm:ss
 int is_iso8601_date(char* string) {
