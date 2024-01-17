@@ -1,5 +1,6 @@
 {
     "files.associations": {
-        "task_scheduler.h": "c"
+        "task_scheduler.h": "c",
+        "stdio.h": "c"
     }
 }

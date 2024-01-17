@@ -197,6 +197,30 @@ static int remove_task_by_id(tasks_list_t* tasks_list, unsigned long id) {
 //////////////////////////////
 
 
+// Function for creating logs.
+static void create_log(char* command) {
+    if (do_logs_flag == 0) {
+        return;
+    }
+    time_t t;
+    time(&t);
+    struct tm *tm_info;
+    tm_info = localtime(&t);
+    unsigned long log_length = 21 + strlen(command);
+    char* log = malloc(log_length * sizeof(char));
+    if (log == NULL) {
+        return;
+    }
+    strftime(log, 21, "%Y-%m-%d %H:%M:%S ", tm_info);
+    strcat(log, command);
+    write_to_login_file(log, STANDARD);
+}
+
+
+/////////////////////////////
+// logs functions          //
+/////////////////////////////
+
 // Send program arguments to server.
 int queue_send_arguments(int argc, char* argv[], mqd_t message_queue) {
     transfer_object_t transfer_object;
@@ -448,6 +472,7 @@ static int list_tasks_query_handler(tasks_list_t* tasks_list, task_list_node_t* 
         mq_close(client_queue);
         return 1;
     }
+    create_log("Finished command: -ls");
     mq_close(client_queue);
     return 0;
 }
@@ -585,23 +610,4 @@ time_t convert_string_to_seconds(char* string) {
         return -1;
     }
     return time;
-}
-
-// Function for creating logs.
-static void create_log(char* command) {
-    if (do_logs_flag == 0) {
-        return;
-    }
-    time_t t;
-    time(&t);
-    struct tm *tm_info;
-    tm_info = localtime(&t);
-    unsigned long log_length = 21 + strlen(command);
-    char* log = malloc(log_length * sizeof(char));
-    if (log == NULL) {
-        return;
-    }
-    strftime(log, 21, "%Y-%m-%d %H:%M:%S ", tm_info);
-    strcat(log, command);
-    write_to_login_file(log, STANDARD);
 }
