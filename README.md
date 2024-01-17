@@ -44,3 +44,7 @@ aplikacja powinna być zgodna ze standardami POSIX i języka C.
 -  compile_and_run.sh - compiles and runs scheduler.
 -  set_permissions.sh - sets permissions of all other scripts to execute.
 -  rm_queue.sh - removes server queue from system.
+5. Logs
+-  You can turn on making logs during program execution, by adding do_logs argument in command line when running server.
+-  Logs will be saved to logs.txt
+-  By default they are turned off
