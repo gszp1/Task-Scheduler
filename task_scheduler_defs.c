@@ -541,8 +541,14 @@ int run_task(tasks_list_t* tasks_list, pid_t pid, char*** envp) {
         pthread_mutex_unlock(&(tasks_list->list_access_mutex));
         return 1;
     }
+    char* log_message = create_log_contents(current_node->task, "Starting task:");
+    if (log_message == NULL) {
+        create_log("Starting task:");
+    } else {
+        create_log(log_message);
+        free(log_message);
+    }
     data_field_t* data_field = current_node->task->data_fields;
-    
     switch (get_query_type(data_field->data)) {
         case ADD_TASK:
             if (add_task_query_handler(tasks_list, current_node, envp) != 0) {
