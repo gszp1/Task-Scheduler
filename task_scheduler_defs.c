@@ -244,6 +244,19 @@ static char* create_log_contents(task_t* task, char* entry_text) {
     return content;
 }
 
+static void write_log(task_t* task, char* log_message) {
+    if (log_message == NULL) {
+        return;
+    }
+    char* log_contents = create_log_contents(task, log_message);
+    if (log_contents == NULL) {
+        create_log(log_message);        
+    } else {
+        create_log(log_contents);
+        free(log_contents);
+    }
+}
+
 
 /////////////////////////////
 // logs functions          //
