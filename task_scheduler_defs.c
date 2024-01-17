@@ -3,6 +3,8 @@
 
 static int do_logs_flag = 0;
 
+static pthread_mutex_t list_access_mutex;
+
 ///////////////////////////
 // functions definitions //
 //////////////////////////
@@ -28,7 +30,7 @@ int task_list_init(tasks_list_t** tasks_list, int do_logs) {
     if (do_logs == 1) {
         initialize_logger();
     }
-    pthread_mutex_init(&((*tasks_list)->list_access_mutex), NULL);
+    pthread_mutex_init(&list_access_mutex, NULL);
     return 0;
 }
 
@@ -82,7 +84,7 @@ void tasks_list_destroy(tasks_list_t* tasks_list) {
         free(current_node);
         current_node = next_node;
     }
-    pthread_mutex_destroy(&(tasks_list->list_access_mutex));
+    pthread_mutex_destroy(&list_access_mutex);
     free(tasks_list);
 }
 
