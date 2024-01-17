@@ -1,7 +1,4 @@
 #include "task_scheduler.h"
-#include "app_state_logger.h"
-
-static int do_logs_flag = 0;
 
 ///////////////////////////
 // functions definitions //
@@ -13,7 +10,7 @@ static int do_logs_flag = 0;
 
 
 // Initialize tasks linked list.
-int task_list_init(tasks_list_t** tasks_list, int do_logs) {
+int task_list_init(tasks_list_t** tasks_list) {
     if (*tasks_list != NULL) { // list was already initialized.
         return 1;
     }
@@ -24,10 +21,6 @@ int task_list_init(tasks_list_t** tasks_list, int do_logs) {
     (*tasks_list)->head = NULL;
     (*tasks_list)->tail = NULL;
     (*tasks_list)->max_id = 0;
-    do_logs_flag = do_logs;
-    if (do_logs == 1) {
-        initialize_logger();
-    }
     pthread_mutex_init(&((*tasks_list)->list_access_mutex), NULL);
     return 0;
 }
@@ -196,31 +189,6 @@ static int remove_task_by_id(tasks_list_t* tasks_list, unsigned long id) {
 // task processing functions //
 //////////////////////////////
 
-
-// Function for creating logs.
-static void create_log(char* command) {
-    if (do_logs_flag == 0) {
-        return;
-    }
-    time_t t;
-    time(&t);
-    struct tm *tm_info;
-    tm_info = localtime(&t);
-    unsigned long log_length = 21 + strlen(command);
-    char* log = malloc(log_length * sizeof(char));
-    if (log == NULL) {
-        return;
-    }
-    strftime(log, 21, "%Y-%m-%d %H:%M:%S ", tm_info);
-    strcat(log, command);
-    write_to_login_file(log, STANDARD);
-}
-
-
-/////////////////////////////
-// logs functions          //
-/////////////////////////////
-
 // Send program arguments to server.
 int queue_send_arguments(int argc, char* argv[], mqd_t message_queue) {
     transfer_object_t transfer_object;
@@ -379,14 +347,6 @@ static int remove_task_query_handler(tasks_list_t* tasks_list, task_list_node_t*
         }
         ++read_fields;
         data_field = data_field->next_field;
-    }
-    if (do_logs_flag == 1) {
-        char* message = malloc((log_length + 1) * sizeof(char));
-        if(message != NULL) {
-            sprintf(message, "%s%s", "Finished command: -rm ", log_data_field->data);
-            create_log(message);
-            free(message);
-        }
     }
     remove_task_by_id(tasks_list, removed_task_id);
     return 0;
