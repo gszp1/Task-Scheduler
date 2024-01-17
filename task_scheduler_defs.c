@@ -359,6 +359,8 @@ static int remove_task_query_handler(tasks_list_t* tasks_list, task_list_node_t*
     data_field_t* data_field = task->task->data_fields;
     unsigned long removed_task_id = 0;
     char read_fields = 0;
+    unsigned long log_length = strlen("Finished command: -rm ");
+    data_field_t* log_data_field = NULL;
     while (data_field != NULL) {
         if (read_fields >= 2) {
             return 1;
@@ -372,9 +374,19 @@ static int remove_task_query_handler(tasks_list_t* tasks_list, task_list_node_t*
             if (removed_task_id == 0) {
                 return 1;
             }
+            log_length += strlen(data_field->data);
+            log_data_field = data_field;
         }
         ++read_fields;
         data_field = data_field->next_field;
+    }
+    if (do_logs_flag == 1) {
+        char* message = malloc((log_length + 1) * sizeof(char));
+        if(message != NULL) {
+            sprintf(message, "%s%s", "Finished command: -rm ", log_data_field->data);
+            create_log(message);
+            free(message);
+        }
     }
     remove_task_by_id(tasks_list, removed_task_id);
     return 0;
