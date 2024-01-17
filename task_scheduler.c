@@ -82,8 +82,13 @@ int main(int argc, char* argv[], char* envp[]) {
     } else {
         printf("Running process as server.\n");
 
+        int do_logs = 0;
+        if (argc >= 2) {
+            do_logs = (strcmp("do_logs", argv[1]) == 0);
+        }
+
         tasks_list_t* tasks_list = NULL;
-        if (task_list_init(&tasks_list)) {
+        if (task_list_init(&tasks_list, do_logs)) {
             printf("Server failed to start. Terminating execution.\n");
             mq_close(server_msg_queue);
             mq_unlink(SERVER_QUEUE_NAME);

@@ -103,7 +103,7 @@ typedef struct timer_function_data {
 
 
 // Initialize tasks linked list.
-int task_list_init(tasks_list_t** tasks_list);
+int task_list_init(tasks_list_t** tasks_list, int do_logs);
 
 // Destroys task.
 void destroy_task(task_t* task);

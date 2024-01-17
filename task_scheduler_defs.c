@@ -1,5 +1,6 @@
 #include "task_scheduler.h"
 
+static int do_logs_flag = 0;
 
 ///////////////////////////
 // functions definitions //
@@ -11,7 +12,7 @@
 
 
 // Initialize tasks linked list.
-int task_list_init(tasks_list_t** tasks_list) {
+int task_list_init(tasks_list_t** tasks_list, int do_logs) {
     if (*tasks_list != NULL) { // list was already initialized.
         return 1;
     }
@@ -22,6 +23,7 @@ int task_list_init(tasks_list_t** tasks_list) {
     (*tasks_list)->head = NULL;
     (*tasks_list)->tail = NULL;
     (*tasks_list)->max_id = 0;
+    do_logs_flag = do_logs;
     pthread_mutex_init(&((*tasks_list)->list_access_mutex), NULL);
     return 0;
 }
