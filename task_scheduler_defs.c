@@ -81,7 +81,7 @@ void tasks_list_destroy(tasks_list_t* tasks_list) {
         destroy_task(current_node->task);
         free(current_node);
         current_node = next_node;
-    }   
+    }
     pthread_mutex_destroy(&(tasks_list->list_access_mutex));
     free(tasks_list);
 }
@@ -195,7 +195,6 @@ static int remove_task_by_id(tasks_list_t* tasks_list, unsigned long id) {
 ///////////////////////////////
 // task processing functions //
 //////////////////////////////
-
 
 // Function for creating logs.
 static void create_log(char* command) {
@@ -319,7 +318,7 @@ static int send_data_to_client(tasks_list_t* tasks_list, mqd_t client_queue) {
             }
             data_field = data_field->next_field;
         }
-        
+
         current_node = current_node->next;
     }
     transfer_object.content[0] = '\0';
@@ -380,7 +379,7 @@ void* timer_thread_task(void* arg) {
         write_log(data->task->task, "Failed to start task:");
         destroy_node(data->tasks_list, data->task);
         pthread_mutex_unlock(&(data->tasks_list->list_access_mutex));
-        return NULL;   
+        return NULL;
     }
     free(arguments);
     if (data->task->task->cyclic == 0) {
@@ -484,8 +483,8 @@ static int add_task_query_handler(tasks_list_t* tasks_list, task_list_node_t* ta
     timer_event.sigev_notify_function = timer_thread_task;
     timer_event.sigev_value.sival_ptr = &timer_data;
     timer_event.sigev_notify_attributes = NULL;
-    timer_create(CLOCK_REALTIME, &timer_event, &(task->task->timer)); 
-    
+    timer_create(CLOCK_REALTIME, &timer_event, &(task->task->timer));
+
     time_t nsec = 0;
     if (time == 0 && repeat_time == 0) {
         nsec = 1;
@@ -623,7 +622,7 @@ int is_iso8601_date(char* string) {
                 if (*(string + counter) != ':') {
                     return 0;
                 }
-                break;            
+                break;
             default:
                 if ((*(string + counter) < '0') || (*(string + counter) > '9')) {
                     return 0;
