@@ -258,7 +258,7 @@ static void write_log(task_t* task, char* log_message) {
 
 
 /////////////////////////////
-// logs functions          //
+//     logs functions      //
 /////////////////////////////
 
 // Send program arguments to server.
@@ -494,12 +494,12 @@ static int add_task_query_handler(tasks_list_t* tasks_list, task_list_node_t* ta
     tispec.it_value.tv_nsec = nsec;
     tispec.it_interval.tv_sec = repeat_time;
     tispec.it_interval.tv_nsec = 0;
+    task->task->task_status = ACTIVE;
     if(time_type == 0) {
         timer_settime(task->task->timer, 0, &tispec, NULL);
     } else {
         timer_settime(task->task->timer, TIMER_ABSTIME, &tispec, NULL);
     }
-    task->task->task_status = ACTIVE;
     write_log(task->task, "Finished starting task:");
     return 0;
 }
