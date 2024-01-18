@@ -536,6 +536,7 @@ static int list_tasks_query_handler(tasks_list_t* tasks_list, task_list_node_t* 
 int run_task(tasks_list_t* tasks_list, pid_t pid, char*** envp) {
     pthread_mutex_lock(&list_access_mutex);
     if (tasks_list == NULL) {
+        pthread_mutex_unlock(&list_access_mutex);
         return 1;
     }
     task_list_node_t* current_node = tasks_list->head;
