@@ -3,6 +3,8 @@
 
 static int do_logs_flag = 0;
 
+static pthread_mutex_t list_access_mutex;
+
 ///////////////////////////
 // functions definitions //
 //////////////////////////
@@ -28,7 +30,7 @@ int task_list_init(tasks_list_t** tasks_list, int do_logs) {
     if (do_logs == 1) {
         initialize_logger();
     }
-    pthread_mutex_init(&((*tasks_list)->list_access_mutex), NULL);
+    pthread_mutex_init(&list_access_mutex, NULL);
     return 0;
 }
 
@@ -82,7 +84,7 @@ void tasks_list_destroy(tasks_list_t* tasks_list) {
         free(current_node);
         current_node = next_node;
     }
-    pthread_mutex_destroy(&(tasks_list->list_access_mutex));
+    pthread_mutex_destroy(&list_access_mutex);
     free(tasks_list);
 }
 
@@ -121,10 +123,11 @@ data_field_t* create_data_field(char* data, pid_t pid) {
 
 // Adds data field read from queue to task.
 int add_data_to_task(tasks_list_t* tasks_list, pid_t pid, data_field_t* data_field) {
+    pthread_mutex_lock(&list_access_mutex);
     if (tasks_list == NULL) {
+        pthread_mutex_unlock(&list_access_mutex);
         return 1;
     }
-    pthread_mutex_lock(&(tasks_list->list_access_mutex));
     task_list_node_t* node = tasks_list->head;
     while (node != NULL) {
         if (node->task->pid == pid) {
@@ -133,7 +136,7 @@ int add_data_to_task(tasks_list_t* tasks_list, pid_t pid, data_field_t* data_fie
         node = node->next;
     }
     if (node == NULL) {
-        pthread_mutex_unlock(&(tasks_list->list_access_mutex));
+        pthread_mutex_unlock(&list_access_mutex);
         return 1;
     }
     if(node->task->data_fields == NULL) {
@@ -146,7 +149,7 @@ int add_data_to_task(tasks_list_t* tasks_list, pid_t pid, data_field_t* data_fie
         current_field->next_field = data_field;
     }
     node->task->number_of_fields += 1;
-    pthread_mutex_unlock(&(tasks_list->list_access_mutex));
+    pthread_mutex_unlock(&list_access_mutex);
     return 0;
 }
 
@@ -158,7 +161,7 @@ int add_task(task_t* task, tasks_list_t* tasks_list) {
     }
     new_node->task = task;
     new_node->next = NULL;
-    pthread_mutex_lock(&(tasks_list->list_access_mutex));
+    pthread_mutex_lock(&list_access_mutex);
     new_node->prev = tasks_list->tail;
     if (tasks_list->tail != NULL) {
         tasks_list->tail->next = new_node;
@@ -171,7 +174,7 @@ int add_task(task_t* task, tasks_list_t* tasks_list) {
     task->id = tasks_list->max_id;
     task->task_status = DISABLED;
     task->cyclic = 0;
-    pthread_mutex_unlock(&(tasks_list->list_access_mutex));
+    pthread_mutex_unlock(&list_access_mutex);
     return 0;
 }
 
@@ -330,8 +333,8 @@ static int send_data_to_client(tasks_list_t* tasks_list, mqd_t client_queue) {
 
 // task executed by thread called by timer.
 void* timer_thread_task(void* arg) {
+    pthread_mutex_lock(&list_access_mutex);
     timer_function_data_t* data = (timer_function_data_t*)arg;
-    pthread_mutex_lock(&(data->tasks_list->list_access_mutex));
     pid_t child_pid;
     data_field_t* data_field = data->task->task->data_fields;
     unsigned long read_fields = 0;
@@ -340,7 +343,7 @@ void* timer_thread_task(void* arg) {
     if (arguments == NULL) {
         write_log(data->task->task, "Failed to start task:");
         destroy_node(data->tasks_list, data->task);
-        pthread_mutex_unlock(&(data->tasks_list->list_access_mutex));
+        pthread_mutex_unlock(&list_access_mutex);
         return NULL;
     }
     char** safe_ptr = NULL;
@@ -354,7 +357,7 @@ void* timer_thread_task(void* arg) {
                 free(arguments);
                 write_log(data->task->task, "Failed to start task:");
                 destroy_node(data->tasks_list, data->task);
-                pthread_mutex_unlock(&(data->tasks_list->list_access_mutex));
+                pthread_mutex_unlock(&list_access_mutex);
                 return NULL;
             }
             arguments = safe_ptr;
@@ -368,7 +371,7 @@ void* timer_thread_task(void* arg) {
         free(arguments);
         write_log(data->task->task, "Failed to start task:");
         destroy_node(data->tasks_list, data->task);
-        pthread_mutex_unlock(&(data->tasks_list->list_access_mutex));
+        pthread_mutex_unlock(&list_access_mutex);
         return NULL;
     }
     arguments = safe_ptr;
@@ -378,7 +381,7 @@ void* timer_thread_task(void* arg) {
         free(arguments);
         write_log(data->task->task, "Failed to start task:");
         destroy_node(data->tasks_list, data->task);
-        pthread_mutex_unlock(&(data->tasks_list->list_access_mutex));
+        pthread_mutex_unlock(&list_access_mutex);
         return NULL;
     }
     free(arguments);
@@ -386,7 +389,7 @@ void* timer_thread_task(void* arg) {
         write_log(data->task->task, "Removed task:");
         destroy_node(data->tasks_list, data->task);
     }
-    pthread_mutex_unlock(&(data->tasks_list->list_access_mutex));
+    pthread_mutex_unlock(&list_access_mutex);
     return NULL;
 }
 
@@ -531,10 +534,10 @@ static int list_tasks_query_handler(tasks_list_t* tasks_list, task_list_node_t* 
 
 // Sets up and runs task.
 int run_task(tasks_list_t* tasks_list, pid_t pid, char*** envp) {
+    pthread_mutex_lock(&list_access_mutex);
     if (tasks_list == NULL) {
         return 1;
     }
-    pthread_mutex_lock(&(tasks_list->list_access_mutex));
     task_list_node_t* current_node = tasks_list->head;
     while (current_node != NULL) {
         if (current_node->task->pid == pid) {
@@ -543,7 +546,7 @@ int run_task(tasks_list_t* tasks_list, pid_t pid, char*** envp) {
         current_node = current_node->next;
     }
     if (current_node == NULL) {
-        pthread_mutex_unlock(&(tasks_list->list_access_mutex));
+        pthread_mutex_unlock(&list_access_mutex);
         return 1;
     }
     write_log(current_node->task, "Starting task:");
@@ -568,10 +571,10 @@ int run_task(tasks_list_t* tasks_list, pid_t pid, char*** envp) {
         default:
             write_log(current_node->task, "Removed task:");
             destroy_node(tasks_list, current_node);
-            pthread_mutex_unlock(&(tasks_list->list_access_mutex));
+            pthread_mutex_unlock(&list_access_mutex);
             return 2;
     }
-    pthread_mutex_unlock(&(tasks_list->list_access_mutex));
+    pthread_mutex_unlock(&list_access_mutex);
     return 0;
 }
 
