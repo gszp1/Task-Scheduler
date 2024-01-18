@@ -1,9 +1,6 @@
 #ifndef APP_STATE_LOGGER_H
 #define APP_STATE_LOGGER_H
 
-#define _POSIX_SOURCE
-#define _GNU_SOURCE
-
 // Includes //
 #include <stdio.h>
 #include <stdlib.h>

@@ -1,8 +1,5 @@
-#ifndef TASK_SCHEDULER_TASK_SCHEDULER_H
-#define TASK_SCHEDULER_TASK_SCHEDULER_H
-
-#define _POSIX_SOURCE
-#define _GNU_SOURCE
+#ifndef TASK_SCHEDULER_H
+#define TASK_SCHEDULER_H
 
 // Macros //
 #define SERVER_QUEUE_NAME "/server_queue"
@@ -157,4 +154,4 @@ time_t get_time(char* time_string, int* time_type);
 //Converts given string  to seconds.
 time_t convert_string_to_seconds(char* string);
 
-#endif //TASK_SCHEDULER_TASK_SCHEDULER_H
+#endif //TASK_SCHEDULER_H
