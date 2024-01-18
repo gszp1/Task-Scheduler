@@ -429,6 +429,9 @@ static int remove_task_query_handler(tasks_list_t* tasks_list, task_list_node_t*
         data_field = data_field->next_field;
     }
     write_log(task->task, "Finished task:");
+    if (removed_task_id == task->task->id) {
+        return 0;
+    }
     remove_task_by_id(tasks_list, removed_task_id);
     return 0;
 }
