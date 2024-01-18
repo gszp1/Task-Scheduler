@@ -83,7 +83,6 @@ typedef struct task_list_node {
 typedef struct {
     task_list_node_t* head;
     task_list_node_t* tail;
-    pthread_mutex_t list_access_mutex;
     unsigned long max_id;
 } tasks_list_t;
 
