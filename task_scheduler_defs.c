@@ -125,6 +125,7 @@ data_field_t* create_data_field(char* data, pid_t pid) {
 int add_data_to_task(tasks_list_t* tasks_list, pid_t pid, data_field_t* data_field) {
     pthread_mutex_lock(&list_access_mutex);
     if (tasks_list == NULL) {
+        pthread_mutex_unlock(&list_access_mutex);
         return 1;
     }
     task_list_node_t* node = tasks_list->head;
