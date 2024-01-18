@@ -31,7 +31,7 @@ int main(int argc, char* argv[], char* envp[]) {
         if (is_list_tasks_query) {
             sprintf(user_queue_name, "%s%d", USER_QUEUE_NAME, getpid());
             struct mq_attr client_queue_attributes;
-            client_queue_attributes.mq_maxmsg = 10;
+            client_queue_attributes.mq_maxmsg = MAX_MESSAGES;
             client_queue_attributes.mq_flags = 0;
             client_queue_attributes.mq_msgsize = sizeof(client_transfer_object_t);
             user_queue = mq_open(user_queue_name, O_CREAT | O_EXCL | O_RDONLY, 0666,  &client_queue_attributes);
